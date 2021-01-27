@@ -171,12 +171,13 @@ async function scrape() {
 exports.scheduledFunction = functions
   .runWith(runtimeOpts)
   .pubsub
-  .schedule('every 2 minutes')
+  .schedule('every 4 hours')
   .onRun(async (context) => {
     console.log('Starting the scraper...');
 
     const categories = await scrape();
     await database.ref('snapshot').set(JSON.stringify(categories));
 
+    console.log('Done');
     return null;
 });

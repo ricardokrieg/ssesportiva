@@ -98,14 +98,7 @@
         <hr>
     </div>
 
-    <div class="container-fluid">
-        <form class="d-flex flex-column">
-            <strong>Buscar jogos por nome ou horário:</strong>
-            <input class="form-control me-2" type="search">
-        </form>
-    </div>
-
-    <div class="container-fluid" id="games">
+    <div class="container-fluid" id="quotes">
     </div>
 </main>
 
@@ -114,11 +107,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/js/all.min.js" integrity="sha512-UwcC/iaz5ziHX7V6LjSKaXgCuRRqbTp1QHpbOJ4l1nw2/boCfZ2KlFIqBUA/uRVF0onbREnY9do8rM/uT/ilqw==" crossorigin="anonymous"></script>
 
 <script>
-  function findChampionship(data, id) {
+  function findGame(data, championshipId, id) {
     for (let group of data) {
       for (let championship of group['championships']) {
-        if (championship['id'] === id) {
-          return championship;
+        if (championship['id'] === championshipId) {
+          for (let game of championship['games']) {
+            if (game['id'] === id) {
+              return game;
+            }
+          }
         }
       }
     }
@@ -126,76 +123,36 @@
     return null;
   }
 
-  function findQuote(game) {
-    for (let quote of game['quotes']) {
-      if (quote['type'] === 'Vencedor do Encontro') {
-        return quote;
-      }
-    }
+  function addQuote(quote) {
+    const type = quote['type'];
 
-    return null;
-  }
+    let content = '<tr><td colspan="2" class="table-primary text-center">' + type + '</td></tr>';
 
-  function findOption(quote, title) {
     for (let option of quote['options']) {
-      if (option['title'] === title) {
-        return option;
-      }
+      content += '<tr>' +
+        '<td>' + option['title'] + '</td>' +
+        '<td>' + option['quote'] + '</td>' +
+        '</tr>';
     }
 
-    return null;
+    return content;
   }
 
-  function addGame(championship, game) {
-    const title = game['title'];
-    const date = game['date'];
-    const id = game['id'];
-    const championshipId = championship['id'];
-
-    const quote = findQuote(game);
-
-    if (quote === null) {
-      // TODO alert
-      return '';
-    }
-
-    const optionCasa = findOption(quote, 'Casa');
-    const optionEmpate = findOption(quote, 'Empate');
-    const optionFora = findOption(quote, 'Fora');
-
-    if (optionCasa === null || optionEmpate === null || optionFora === null) {
-      // TODO alert
-      return '';
-    }
-
-    const text = title.replace(' x ', '<br>') + '<br>' + date.replace('/2021', '');
-    const url = 'jogo.html?id=' + id + '&campeonato=' + championshipId;
-
-    return '<tr>' +
-      '<td><a href="' + url + '">' + text + '</a></td>' +
-      '<td>' + '<button type="button" class="btn btn-primary">' + optionCasa['quote'] + '</button>' + '</td>' +
-      '<td>' + '<button type="button" class="btn btn-primary">' + optionEmpate['quote'] + '</button>' + '</td>' +
-      '<td>' + '<button type="button" class="btn btn-primary">' + optionFora['quote'] + '</button>' + '</td>' +
-      '</tr>';
-  }
-
-  function fillContent(championship) {
-    $('#title').text(championship['title']);
+  function fillContent(game) {
+    $('#title').text(game['title']);
 
     let content = '<table class="table table-striped"><thead><tr>' +
-      '<th scope="col">Partida</th>' +
-      '<th scope="col">1</th>' +
-      '<th scope="col">x</th>' +
-      '<th scope="col">2</th>' +
+      '<th scope="col">Tipo de Aposta</th>' +
+      '<th scope="col">Opção</th>' +
       '</tr></thead>' +
       '<tbody>';
 
-    for (let game of championship['games']) {
-      content += addGame(championship, game);
+    for (let quote of game['quotes']) {
+      content += addQuote(quote);
     }
     content += '</tbody></table>';
 
-    $('#games').html(content);
+    $('#quotes').html(content);
   }
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -211,15 +168,16 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        const championship = findChampionship(data, id);
+        const championshipId = urlParams.get('campeonato');
+        const game = findGame(data, championshipId, id);
 
-        if (championship !== null) {
-          console.log(championship);
+        if (game !== null) {
+          console.log(game);
 
-          fillContent(championship);
+          fillContent(game);
         } else {
           // TODO alert
-          console.error('Campeonato não encontrado!');
+          console.error('Jogo não encontrado!');
         }
       } catch (e) {
         // TODO alert

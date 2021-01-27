@@ -94,13 +94,14 @@
 <script>
   function addChampionship(championship) {
     const title = championship['title'];
+    const url = 'campeonato.html?id=' + championship['id'];
 
     return '<div class="card">' +
       '<div class="card-body">' +
       title +
       '</div>' +
       '<div class="card-footer">' +
-      '<a href="#" class="d-flex justify-content-between">' +
+      '<a href="' + url + '" class="d-flex justify-content-between">' +
       '<span>Ver Jogos</span>' +
       '<span><i class="fas fa-arrow-alt-circle-right"></i></span>' +
       '</a>' +
