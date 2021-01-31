@@ -22,16 +22,16 @@ const _ = require('lodash');
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
-const database = admin.database();
+// const database = admin.database();
+const firestore = admin.firestore();
+
+const menuCol = firestore.collection('menu');
+const championshipsCol = firestore.collection('championships');
+const gamesCol = firestore.collection('games');
 
 const runtimeOpts = {
   timeoutSeconds: 300
 }
-
-// const firestore = admin.firestore();
-
-// const roomsColRef = firestore.collection('rooms');
-// const usersColRef = firestore.collection('users');
 // Firebase - END
 
 const baseUrl = `https://thebets.bet/simulador`;
@@ -168,16 +168,88 @@ async function scrape() {
   return categories;
 }
 
-exports.scheduledFunction = functions
+exports.scrape = functions
   .runWith(runtimeOpts)
   .pubsub
-  .schedule('every 4 hours')
+  .schedule('every 2 minutes')
   .onRun(async (context) => {
     console.log('Starting the scraper...');
 
-    const categories = await scrape();
-    await database.ref('snapshot').set(JSON.stringify(categories));
+    const groups = await scrape();
+    // await database.ref('snapshot').set(groups);
+
+    // mark each championship to be removed
+    let querySnapshot = await championshipsCol.get();
+    for (let docSnapshot of querySnapshot.docs) {
+      await docSnapshot.ref.update({ keep: false });
+    }
+
+    // mark each game to be removed
+    querySnapshot = await gamesCol.get();
+    for (let docSnapshot of querySnapshot.docs) {
+      await docSnapshot.ref.update({ keep: false });
+    }
+
+    const menu = [];
+
+    for (let group of groups) {
+      console.log(`Adding group "${group['name']}"`);
+
+      const groupData = { name: group['name'], championships: [] };
+
+      for (let championship of group['championships']) {
+        console.log(`Adding championship "${championship['title']}"`);
+
+        const championshipData = { title: championship['title'], id: championship['id'] };
+        groupData['championships'].push({ ...championshipData });
+
+        championshipData['games'] = [];
+        // for (let game of championship['games']) {
+        //   const gameData = { title: game['title'], date: game['date'] };
+        //   if (game['id']) {
+        //     gameData['id'] = game['id'];
+        //
+        //     await gamesCol.doc(game['id']).set(game);
+        //   }
+        //
+        //   championshipData['games'].push(gameData);
+        // }
+        //
+        // await championshipsCol.doc(championship['id']).set(championshipData);
+      }
+
+      menu.push(groupData);
+    }
+
+    await menuCol.doc('snapshot').set({ data: menu });
+
+    querySnapshot = await championshipsCol.where('keep', '==', false).get();
+    for (let docSnapshot of querySnapshot.docs) {
+      console.log(`Deleting championship "${docSnapshot.id}"`);
+      await docSnapshot.ref.delete();
+    }
+
+    querySnapshot = await gamesCol.where('keep', '==', false).get();
+    for (let docSnapshot of querySnapshot.docs) {
+      console.log(`Deleting championship "${docSnapshot.id}"`);
+      await docSnapshot.ref.delete();
+    }
 
     console.log('Done');
     return null;
+});
+
+exports.getCurrentSnapshot = functions
+  .https
+  // .onCall(async (data, context) => {
+  .onRequest(async (req, res) => {
+    console.log('here 1');
+    const ref = database.ref('snapshot');
+    console.log('here 2');
+    const snapshot = await ref.once('value');
+    console.log('here 3');
+
+    // return JSON.parse(snapshot.val());
+
+    res.status(200).send(JSON.parse(snapshot.val()));
 });

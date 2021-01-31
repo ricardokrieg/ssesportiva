@@ -14,6 +14,10 @@
     ],
     "rewrites": [
       {
+        "source": "/grupos",
+        "function": "getGroups"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
