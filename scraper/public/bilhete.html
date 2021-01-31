@@ -82,25 +82,34 @@
     </div>
 </nav>
 
-<nav class="navbar navbar-light bg-light">
-    <div class="container-fluid">
-        <form class="d-flex">
-            <input class="form-control me-2 bet-value" type="text" placeholder="Valor da Aposta">
-            <input class="form-control me-2 expected-return" type="text" placeholder="R$ 0,00" disabled="disabled">
-            <button class="btn btn-outline-success" type="submit">Finalizar</button>
-        </form>
-    </div>
-</nav>
-
 <main id="main" class="container">
     <div class="container-fluid">
-        <h1 id="title"></h1>
+        <h1 id="title">Conferir Bilhete</h1>
         <hr>
     </div>
 
-    <div class="container-fluid" id="quotes">
+    <div class="container-fluid">
+        <form id="search-ticket" class="d-flex flex-column">
+            <strong>Favor inserir o código do bilhete:</strong>
+            <input id="ticket-code" class="form-control me-2" type="search">
+        </form>
     </div>
 </main>
+
+<div class="modal fade" id="bet-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bilhete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                ...
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
 <script src="js/bootstrap.bundle.min.js"></script>
@@ -108,84 +117,14 @@
 <script src="js/main.js"></script>
 
 <script>
-  function addQuote(gameId, quote) {
-    const type = quote['type'];
-
-    let content = '<tr><td colspan="2" class="table-primary text-center">' + type + '</td></tr>';
-
-    for (let option of quote['options']) {
-      content += '<tr>' +
-        '<td>' + option['title'] + '</td>' +
-        '<td><button type="button" class="btn btn-primary" data-option-id="' + option['id'] + '" data-option-quote="' + option['quote'] + '" data-option-game-id="' + gameId + '">' + option['quote'] + '</button>' + '</td>' +
-        '</tr>';
-    }
-
-    return content;
-  }
-
-  function fillContent(game) {
-    $('#title').text(game['title']);
-
-    let content = '<table class="table table-striped"><thead><tr>' +
-      '<th scope="col">Tipo de Aposta</th>' +
-      '<th scope="col">Opção</th>' +
-      '</tr></thead>' +
-      '<tbody>';
-
-    for (let quote of game['quotes']) {
-      content += addQuote(game['id'], quote);
-    }
-    content += '</tbody></table>';
-
-    $('#quotes').html(content);
-  }
-
   document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
+    $('#search-ticket').on('submit', function(e) {
+      e.preventDefault();
 
-    // TODO start loading spinner
-    console.log(new Date(), 'Fetching data');
-    return firebase.functions().httpsCallable('getGame')({ id: id }).then(function (result) {
-      try {
-        // TODO stop loading spinner
-        console.log(new Date(), 'Received data from function');
-        const data = result['data'];
-        console.log(data);
+      const code = $('#ticket-code').val();
+      searchBet(code);
 
-        if (data['error']) {
-          throw data['error'];
-        }
-
-        fillContent(data);
-
-        $('.bet-value').on('input', function() {
-          setBetValue($(this).val());
-          updateExpectedReturn();
-        });
-
-        $('[data-option-id]').on('click', function() {
-          if ($(this).attr('data-option-selected')) {
-            removeOption($(this).attr('data-option-id'));
-          } else {
-            addOption({
-              id: $(this).attr('data-option-id'),
-              quote: parseFloat($(this).attr('data-option-quote')),
-              gameId: $(this).attr('data-option-game-id')
-            });
-          }
-
-          updateOptions();
-          updateExpectedReturn();
-        });
-
-        updateOptions();
-        updateBetValue();
-        updateExpectedReturn();
-      } catch (e) {
-        // TODO alert
-        console.error(e);
-      }
+      return false;
     });
   });
 </script>

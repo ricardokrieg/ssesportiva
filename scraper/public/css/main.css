@@ -7388,3 +7388,6 @@ textarea.form-control-lg {
 
 .accordion-body .card {
   margin-bottom: 1rem; }
+
+button[data-option-selected] {
+  background-color: red !important; }

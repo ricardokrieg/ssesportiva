@@ -28,6 +28,7 @@ const firestore = admin.firestore();
 const menuCol = firestore.collection('menu');
 const championshipsCol = firestore.collection('championships');
 const gamesCol = firestore.collection('games');
+const betsCol = firestore.collection('bets');
 
 const runtimeOpts = {
   timeoutSeconds: 300
@@ -35,6 +36,29 @@ const runtimeOpts = {
 // Firebase - END
 
 const baseUrl = `https://thebets.bet/simulador`;
+
+const MIN_BET_VALUE = 200; // R$2,00
+const MAX_BET_VALUE = 100000; // R$1.000,00
+const MIN_QUOTE_VALUE = 2;
+
+function randomCode() {
+  let code = _.sample('123456789');
+  while (code.length < 6) {
+    code += _.sample('0123456789');
+  }
+
+  return code;
+}
+
+async function generateBetCode() {
+  let code;
+
+  do {
+    code = randomCode();
+  } while ((await betsCol.doc(String(code)).get()).exists)
+
+  return code;
+}
 
 async function scrapeGame(title, date, url) {
   debug(`Scraping ${title} ${date} (${url})`);
@@ -176,7 +200,6 @@ exports.scrape = functions
     console.log('Starting the scraper...');
 
     const groups = await scrape();
-    // await database.ref('snapshot').set(groups);
 
     // mark each championship to be removed
     let querySnapshot = await championshipsCol.get();
@@ -213,7 +236,7 @@ exports.scrape = functions
             gameData['id'] = game['id'];
             gameData['quote'] = quoteData;
 
-            await gamesCol.doc(game['id']).set({ ...game, keep: true });
+            await gamesCol.doc(game['id']).set({ ...game, championshipId: championship['id'], keep: true });
           }
 
           championshipData['games'].push(gameData);
@@ -252,6 +275,7 @@ exports.getMenu = functions
 
       return docSnapshot.data();
     } catch (e) {
+      console.error(e);
       return { error: "Ocorreu um erro!" };
     }
 });
@@ -266,11 +290,12 @@ exports.getChampionship = functions
       const docSnapshot = await docRef.get();
 
       if (!docSnapshot.exists) {
-        throw new Error("Campeonato não encontrado");
+        return { error: "Campeonato não encontrado" };
       }
 
       return docSnapshot.data();
     } catch (e) {
+      console.error(e);
       return { error: "Ocorreu um erro!" };
     }
   });
@@ -285,11 +310,160 @@ exports.getGame = functions
       const docSnapshot = await docRef.get();
 
       if (!docSnapshot.exists) {
-        throw new Error("Jogo não encontrado");
+        return { error: "Partida não encontrada" };
       }
 
       return docSnapshot.data();
     } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.placeBet = functions
+  .https
+  .onCall(async (data, _context) => {
+    try {
+      const betValue = data['betValue'];
+      const options = data['options'];
+
+      if (!betValue || isNaN(betValue) || betValue < MIN_BET_VALUE || betValue > MAX_BET_VALUE) {
+        return { error: "Valor da aposta inválido" };
+      }
+
+      if (!options || options.length < 1) {
+        return { error: "Aposta inválida" };
+      }
+
+      let gameIds = [];
+      for (let option of options) {
+        if (!option['id'] || !option['gameId']) {
+          return { error: "Aposta inválida" };
+        }
+
+        if (gameIds.includes(option['gameId'])) {
+          return { error: "Aposta inválida: Múltiplas apostas na mesma partida" };
+        }
+
+        gameIds.push(option['gameId']);
+      }
+
+      const betData = {
+        value: betValue,
+        options: [],
+      };
+
+      for (let option of options) {
+        console.log(option);
+
+        const id = option['id'];
+        const gameId = option['gameId'];
+        const optionData = { id, gameId };
+
+        const gameRef = gamesCol.doc(gameId);
+        const gameSnapshot = await gameRef.get();
+
+        if (!gameSnapshot.exists) {
+          return { error: "Partida não encontrada" };
+        }
+
+        const gameData = gameSnapshot.data();
+        const gameTitle = gameData['title'];
+        const gameDate = gameData['date'];
+
+        // TODO find championship and copy data from it
+        const championshipRef = championshipsCol.doc(gameData['championshipId']);
+        const championshipSnapshot = await championshipRef.get();
+
+        if (!championshipSnapshot.exists) {
+          return { error: "Campeonato não encontrado" };
+        }
+
+        const championshipData = championshipSnapshot.data();
+        const championshipId = championshipData['id'];
+        const championshipTitle = championshipData['title'];
+        const groupName = championshipData['group'];
+
+        let found = false;
+        for (let quote of gameData['quotes']) {
+          for (let storedOption of quote['options']) {
+            if (storedOption['id'] === id) {
+              found = true;
+
+              optionData['group'] = groupName;
+              optionData['championshipId'] = championshipId;
+              optionData['championship'] = championshipTitle;
+              optionData['game'] = gameTitle;
+              optionData['gameDate'] = gameDate;
+              optionData['quoteType'] = quote['type'];
+              optionData['title'] = storedOption['title'];
+              optionData['quote'] = storedOption['quote'];
+
+              betData['options'].push(optionData);
+
+              break;
+            }
+          }
+
+          if (found) {
+            break;
+          }
+        }
+
+        if (!found) {
+          return { error: 'Cotação não encontrada' };
+        }
+      }
+
+      let totalQuote = 0.0;
+      for (let option of betData['options']) {
+        totalQuote += option['quote'];
+      }
+
+      if (totalQuote < MIN_QUOTE_VALUE) {
+        return { error: "Aposta inválida: Cotação abaixo do mínimo" };
+      }
+
+      betData['expectedReturn'] = totalQuote * betValue;
+
+      // TODO check if generated code already exists
+      const code = await generateBetCode();
+
+      await betsCol.doc(String(code)).set(betData);
+
+      return { ...betData, code };
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.searchBet = functions
+  .https
+  .onCall(async (data, _context) => {
+    try {
+      const code = data['code'];
+
+      if (!code || code.length === 0) {
+        return { error: "Por favor insira o código do bilhete" };
+      }
+
+      const docRef = betsCol.doc(code);
+      const docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        return { error: "Bilhete não encontrado" };
+      }
+
+      const betData = docSnapshot.data();
+
+      if (!betData['confirmedAt']) {
+        return { error: "Bilhete não encontrado" };
+      }
+
+      return betData;
+    } catch (e) {
+      console.error(e);
       return { error: "Ocorreu um erro!" };
     }
   });

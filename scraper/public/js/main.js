@@ -14,7 +14,6 @@ function getBetValueInCents() {
   return getBetValue() * 100;
 }
 
-// TODO this should be the sum of all quotes
 function getCurrentQuote() {
   let currentQuote = 0.0;
 
@@ -37,7 +36,13 @@ function getExpectedReturnInCents() {
 }
 
 function updateOptions() {
-  // TODO for each option in the LocalStorage, mark the appropriate button as selected/clicked
+  const options = getOptions();
+
+  $('[data-option-id]').removeAttr('data-option-selected');
+
+  for (let option of options) {
+    $('[data-option-id=' + option['id'] + ']').attr('data-option-selected', true);
+  }
 }
 
 function updateBetValue() {
@@ -45,20 +50,25 @@ function updateBetValue() {
 
   if (betValue === null) return;
 
-  $('#bet-value').val(betValue);
+  $('.bet-value').val(betValue);
 }
 
 function updateExpectedReturn() {
   const expectedReturn = getExpectedReturnInCents();
 
-  $('#expected-return').val(format(expectedReturn));
+  $('.expected-return').val(format(expectedReturn));
+  $('.expected-return-text').text(format(expectedReturn));
 }
 
-function format(value) {
-  let cents = String(value % 100);
+function updateCurrentQuote() {
+  $('.current-quote-text').text(getCurrentQuote());
+}
+
+function format(valueInCents) {
+  let cents = (valueInCents % 100).toFixed(0);
   if (cents.length === 1) cents = cents + '0';
 
-  return 'R$ ' + Math.floor(value / 100) + ',' + cents;
+  return 'R$ ' + Math.floor(valueInCents / 100) + ',' + cents;
 }
 
 function getOptions() {
@@ -89,4 +99,44 @@ function addOption(option) {
   options.push(option);
 
   setOptions(options);
+}
+
+function removeOption(id) {
+  let options = getOptions();
+
+  let i = 0;
+  for (let existingOption of options) {
+    if (existingOption['id'] === id) {
+      options.splice(i, 1);
+      break;
+    }
+    i++;
+  }
+
+  setOptions(options);
+}
+
+function placeBet() {
+  const params = {
+    betValue: getBetValueInCents(),
+    options: getOptions(),
+  };
+
+  // TODO start spinner
+  firebase.functions().httpsCallable('placeBet')(params).then(function (result) {
+    // TODO stop spinner
+    // TODO handle error with .catch
+    console.log('PLACE BET RESULT');
+    console.log(result);
+  });
+}
+
+function searchBet(code) {
+  // TODO start spinner
+  firebase.functions().httpsCallable('searchBet')({ code }).then(function (result) {
+    // TODO stop spinner
+    // TODO handle error with .catch
+    console.log('SEARCH BET RESULT');
+    console.log(result);
+  });
 }

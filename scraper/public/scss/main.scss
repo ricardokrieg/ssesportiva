@@ -5,3 +5,7 @@
     margin-bottom: $spacer;
   }
 }
+
+button[data-option-selected] {
+  background-color: red !important;
+}
