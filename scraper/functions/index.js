@@ -171,7 +171,7 @@ async function scrape() {
 exports.scrape = functions
   .runWith(runtimeOpts)
   .pubsub
-  .schedule('every 2 minutes')
+  .schedule('every 4 hours')
   .onRun(async (context) => {
     console.log('Starting the scraper...');
 
@@ -203,19 +203,23 @@ exports.scrape = functions
         const championshipData = { title: championship['title'], id: championship['id'] };
         groupData['championships'].push({ ...championshipData });
 
+        championshipData['group'] = group['name'];
         championshipData['games'] = [];
-        // for (let game of championship['games']) {
-        //   const gameData = { title: game['title'], date: game['date'] };
-        //   if (game['id']) {
-        //     gameData['id'] = game['id'];
-        //
-        //     await gamesCol.doc(game['id']).set(game);
-        //   }
-        //
-        //   championshipData['games'].push(gameData);
-        // }
-        //
-        // await championshipsCol.doc(championship['id']).set(championshipData);
+        for (let game of championship['games']) {
+          const gameData = { title: game['title'], date: game['date'] };
+          const quoteData = game['quotes'][0];
+
+          if (game['id'] && quoteData) {
+            gameData['id'] = game['id'];
+            gameData['quote'] = quoteData;
+
+            await gamesCol.doc(game['id']).set({ ...game, keep: true });
+          }
+
+          championshipData['games'].push(gameData);
+        }
+
+        await championshipsCol.doc(championship['id']).set({ ...championshipData, keep: true });
       }
 
       menu.push(groupData);
@@ -239,17 +243,53 @@ exports.scrape = functions
     return null;
 });
 
-exports.getCurrentSnapshot = functions
+exports.getMenu = functions
   .https
-  // .onCall(async (data, context) => {
-  .onRequest(async (req, res) => {
-    console.log('here 1');
-    const ref = database.ref('snapshot');
-    console.log('here 2');
-    const snapshot = await ref.once('value');
-    console.log('here 3');
+  .onCall(async (_data, _context) => {
+    try {
+      const docRef = menuCol.doc('snapshot');
+      const docSnapshot = await docRef.get();
 
-    // return JSON.parse(snapshot.val());
-
-    res.status(200).send(JSON.parse(snapshot.val()));
+      return docSnapshot.data();
+    } catch (e) {
+      return { error: "Ocorreu um erro!" };
+    }
 });
+
+exports.getChampionship = functions
+  .https
+  .onCall(async (data, _context) => {
+    try {
+      const id = data['id'];
+
+      const docRef = championshipsCol.doc(id);
+      const docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        throw new Error("Campeonato não encontrado");
+      }
+
+      return docSnapshot.data();
+    } catch (e) {
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getGame = functions
+  .https
+  .onCall(async (data, _context) => {
+    try {
+      const id = data['id'];
+
+      const docRef = gamesCol.doc(id);
+      const docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        throw new Error("Jogo não encontrado");
+      }
+
+      return docSnapshot.data();
+    } catch (e) {
+      return { error: "Ocorreu um erro!" };
+    }
+  });

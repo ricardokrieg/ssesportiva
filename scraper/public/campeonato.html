@@ -115,28 +115,6 @@
 <script src="js/main.js"></script>
 
 <script>
-  function findChampionship(data, id) {
-    for (let group of data) {
-      for (let championship of group['championships']) {
-        if (championship['id'] === id) {
-          return championship;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  function findQuote(game) {
-    for (let quote of game['quotes']) {
-      if (quote['type'] === 'Vencedor do Encontro') {
-        return quote;
-      }
-    }
-
-    return null;
-  }
-
   function findOption(quote, title) {
     for (let option of quote['options']) {
       if (option['title'] === title) {
@@ -151,9 +129,8 @@
     const title = game['title'];
     const date = game['date'];
     const id = game['id'];
+    const quote = game['quote'];
     const championshipId = championship['id'];
-
-    const quote = findQuote(game);
 
     if (quote === null) {
       // TODO alert
@@ -170,13 +147,13 @@
     }
 
     const text = title.replace(' x ', '<br>') + '<br>' + date.replace('/2021', '');
-    const url = 'jogo.html?id=' + id + '&campeonato=' + championshipId;
+    const url = id ? ('jogo.html?id=' + id + '&campeonato=' + championshipId) : '';
 
     return '<tr>' +
       '<td><a href="' + url + '">' + text + '</a></td>' +
-      '<td>' + '<button type="button" class="btn btn-primary">' + optionCasa['quote'] + '</button>' + '</td>' +
-      '<td>' + '<button type="button" class="btn btn-primary">' + optionEmpate['quote'] + '</button>' + '</td>' +
-      '<td>' + '<button type="button" class="btn btn-primary">' + optionFora['quote'] + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionCasa['id'] + '" data-option-quote="' + optionCasa['quote'] + '" data-option-game-id="' + id + '">' + optionCasa['quote'] + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionEmpate['id'] + '" data-option-quote="' + optionEmpate['quote'] + '" data-option-game-id="' + id + '">' + optionEmpate['quote'] + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionFora['id'] + '" data-option-quote="' + optionFora['quote'] + '" data-option-game-id="' + id + '">' + optionFora['quote'] + '</button>' + '</td>' +
       '</tr>';
   }
 
@@ -199,58 +176,48 @@
     $('#games').html(content);
   }
 
-  $('#bet-value').on('input', function() {
-    setBetValue($(this).val());
-    updateExpectedReturn();
-  });
-  updateBetValue();
-  updateExpectedReturn();
-
   document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
     // TODO start loading spinner
     console.log(new Date(), 'Fetching data');
-
-    return firebase.database().ref('/snapshot').once('value').then((snapshot) => {
+    return firebase.functions().httpsCallable('getChampionship')({ id: id }).then((result) => {
       try {
         // TODO stop loading spinner
-        console.log(new Date(), 'Received data');
+        console.log(new Date(), 'Received data from function');
+        const data = result['data'];
+        console.log(data);
 
-        const data = JSON.parse(snapshot.val());
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-        const championship = findChampionship(data, id);
-
-        if (championship !== null) {
-          console.log(championship);
-
-          fillContent(championship);
-        } else {
-          // TODO alert
-          console.error('Campeonato não encontrado!');
+        if (data['error']) {
+          throw data['error'];
         }
+
+        fillContent(data);
+
+        $('#bet-value').on('input', function() {
+          setBetValue($(this).val());
+          updateExpectedReturn();
+        });
+
+        $('[data-option-id]').on('click', function() {
+          addOption({
+            id: $(this).attr('data-option-id'),
+            quote: parseFloat($(this).attr('data-option-quote')),
+            gameId: $(this).attr('data-option-game-id')
+          });
+
+          updateExpectedReturn();
+        });
+
+        updateOptions();
+        updateBetValue();
+        updateExpectedReturn();
       } catch (e) {
         // TODO alert
         console.error(e);
       }
     });
-
-    try {
-      let app = firebase.app();
-      let features = [
-        'auth',
-        'database',
-        'firestore',
-        'functions',
-        'messaging',
-        'storage',
-        'analytics',
-        'remoteConfig',
-        'performance',
-      ].filter(feature => typeof app[feature] === 'function');
-    } catch (e) {
-      console.error(e);
-    }
   });
 </script>
 

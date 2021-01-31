@@ -156,51 +156,28 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
     // TODO start loading spinner
     console.log(new Date(), 'Fetching data');
-
-    return firebase.database().ref('/snapshot').once('value').then((snapshot) => {
+    return firebase.functions().httpsCallable('getGame')({ id: id }).then((result) => {
       try {
         // TODO stop loading spinner
-        console.log(new Date(), 'Received data');
+        console.log(new Date(), 'Received data from function');
+        const data = result['data'];
+        console.log(data);
 
-        const data = JSON.parse(snapshot.val());
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-        const championshipId = urlParams.get('campeonato');
-        const game = findGame(data, championshipId, id);
-
-        if (game !== null) {
-          console.log(game);
-
-          fillContent(game);
-        } else {
-          // TODO alert
-          console.error('Jogo não encontrado!');
+        if (data['error']) {
+          throw data['error'];
         }
+
+        fillContent(data);
       } catch (e) {
         // TODO alert
         console.error(e);
       }
     });
-
-    try {
-      let app = firebase.app();
-      let features = [
-        'auth',
-        'database',
-        'firestore',
-        'functions',
-        'messaging',
-        'storage',
-        'analytics',
-        'remoteConfig',
-        'performance',
-      ].filter(feature => typeof app[feature] === 'function');
-    } catch (e) {
-      console.error(e);
-    }
   });
 </script>
 

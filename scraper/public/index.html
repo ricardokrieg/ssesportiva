@@ -139,105 +139,30 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-    // // The Firebase SDK is initialized and available here!
-    //
-    // firebase.auth().onAuthStateChanged(user => { });
     console.log(new Date(), 'Fetching data');
+
     // TODO start loading spinner
-    firebase.functions().httpsCallable('getCurrentSnapshot')().then((result) => {
+    firebase.functions().httpsCallable('getMenu')().then((result) => {
       try {
         // TODO stop loading spinner
         console.log(new Date(), 'Received data from function');
-        const data = result['data'];
+        const data = result['data']['data'];
         console.log(data);
 
+        if (data['error']) {
+          throw data['error'];
+        }
+
         let i = 1;
         for (let group of data) {
           $('#accordion').append(addGroup(group, i));
           i++;
-
-          // for (let game of championship['games']) {
-          //   console.log(game['title']);
-          //   console.log(game['date']);
-          //
-          //   for (let quote of game['quotes']) {
-          //     console.log(quote['type']);
-          //
-          //     for (let option of quote['options']) {
-          //       console.log(option['title']);
-          //       console.log(option['quote']);
-          //     }
-          //   }
-          // }
         }
       } catch (e) {
         // TODO alert
         console.error(e);
       }
     });
-
-    return;
-
-    firebase.database().ref('/snapshot').once('value').then((snapshot) => {
-      try {
-        // TODO stop loading spinner
-        console.log(new Date(), 'Received data');
-
-        const data = JSON.parse(snapshot.val());
-        // console.log(data);
-
-        let i = 1;
-        for (let group of data) {
-          $('#accordion').append(addGroup(group, i));
-          i++;
-
-          // for (let game of championship['games']) {
-          //   console.log(game['title']);
-          //   console.log(game['date']);
-          //
-          //   for (let quote of game['quotes']) {
-          //     console.log(quote['type']);
-          //
-          //     for (let option of quote['options']) {
-          //       console.log(option['title']);
-          //       console.log(option['quote']);
-          //     }
-          //   }
-          // }
-        }
-      } catch (e) {
-        // TODO alert
-        console.error(e);
-      }
-    });
-    // firebase.firestore().doc('/foo/bar').get().then(() => { });
-    // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-    // firebase.messaging().requestPermission().then(() => { });
-    // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-    // firebase.analytics(); // call to activate
-    // firebase.analytics().logEvent('tutorial_completed');
-    // firebase.performance(); // call to activate
-    //
-    // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-    try {
-      let app = firebase.app();
-      let features = [
-        'auth',
-        'database',
-        'firestore',
-        'functions',
-        'messaging',
-        'storage',
-        'analytics',
-        'remoteConfig',
-        'performance',
-      ].filter(feature => typeof app[feature] === 'function');
-    } catch (e) {
-      // TODO alert
-      console.error(e);
-    }
   });
 </script>
 
