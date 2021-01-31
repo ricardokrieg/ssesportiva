@@ -29,6 +29,7 @@ const menuCol = firestore.collection('menu');
 const championshipsCol = firestore.collection('championships');
 const gamesCol = firestore.collection('games');
 const betsCol = firestore.collection('bets');
+const membersCol = firestore.collection('members');
 
 const runtimeOpts = {
   timeoutSeconds: 300
@@ -40,6 +41,26 @@ const baseUrl = `https://thebets.bet/simulador`;
 const MIN_BET_VALUE = 200; // R$2,00
 const MAX_BET_VALUE = 100000; // R$1.000,00
 const MIN_QUOTE_VALUE = 2;
+
+
+async function getMember(context) {
+  const user = context.auth;
+
+  if (!user) {
+    return null;
+  }
+
+  const userEmail = user.token ? user.token.email : null;
+
+  if (!userEmail) {
+    return null;
+  }
+
+  const docRef = membersCol.doc(userEmail);
+  const docSnapshot = await docRef.get();
+
+  return docSnapshot.data();
+}
 
 function randomCode() {
   let code = _.sample('123456789');
@@ -440,7 +461,7 @@ exports.placeBet = functions
 
 exports.searchBet = functions
   .https
-  .onCall(async (data, _context) => {
+  .onCall(async (data, context) => {
     try {
       const code = data['code'];
 
@@ -456,8 +477,9 @@ exports.searchBet = functions
       }
 
       const betData = docSnapshot.data();
+      const member = await getMember(context);
 
-      if (!betData['confirmedAt']) {
+      if (!member && !betData['confirmedAt']) {
         return { error: "Bilhete não encontrado" };
       }
 

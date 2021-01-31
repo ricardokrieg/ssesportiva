@@ -7386,6 +7386,10 @@ textarea.form-control-lg {
   .d-print-none {
     display: none !important; } }
 
+body {
+  min-height: 75rem;
+  padding-top: 4.5rem; }
+
 .accordion-body .card {
   margin-bottom: 1rem; }
 

@@ -140,3 +140,28 @@ function searchBet(code) {
     console.log(result);
   });
 }
+
+function login(email, password) {
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(function (userCredential) {
+      const user = userCredential.user;
+      console.log(user);
+      console.log(user.email);
+    })
+    .catch(function (error) {
+      // TODO alert
+      const errorCode = error.code;
+      const errorMessage = error.message;
+    });
+}
+
+function logout() {
+  firebase.auth().signOut()
+    .then(function () {
+      // Sign-out successful.
+    })
+    .catch(function (error) {
+      // An error happened.
+      // TODO alert
+    });
+}

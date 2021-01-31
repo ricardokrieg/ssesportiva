@@ -51,24 +51,17 @@
     </div>
 </nav>
 
-<nav class="navbar navbar-light bg-light">
-    <div class="container-fluid">
-        <div class="d-flex">
-            <input class="form-control me-2 bet-value" type="text" placeholder="Valor da Aposta">
-            <input class="form-control me-2 expected-return" type="text" placeholder="R$ 0,00" disabled="disabled">
-
-            <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#bet-modal">Finalizar</button>
-        </div>
-    </div>
-</nav>
-
 <main id="main" class="container">
-    <div class="container-fluid">
-        <h1 id="title"></h1>
-        <hr>
-    </div>
+    <form id="login-form" style="display: none;">
+        <input type="email" id="email">
+        <input type="password" id="password">
 
-    <div class="container-fluid" id="quotes">
+        <button type="submit">Entrar</button>
+    </form>
+
+    <div id="user-details" style="display: none;">
+        <div>Email: <span class="email"></span></div>
+        <button id="logout">Sair</button>
     </div>
 </main>
 
@@ -78,84 +71,29 @@
 <script src="js/main.js"></script>
 
 <script>
-  function addQuote(gameId, quote) {
-    const type = quote['type'];
-
-    let content = '<tr><td colspan="2" class="table-primary text-center">' + type + '</td></tr>';
-
-    for (let option of quote['options']) {
-      content += '<tr>' +
-        '<td>' + option['title'] + '</td>' +
-        '<td><button type="button" class="btn btn-primary" data-option-id="' + option['id'] + '" data-option-quote="' + option['quote'] + '" data-option-game-id="' + gameId + '">' + option['quote'] + '</button>' + '</td>' +
-        '</tr>';
-    }
-
-    return content;
-  }
-
-  function fillContent(game) {
-    $('#title').text(game['title']);
-
-    let content = '<table class="table table-striped"><thead><tr>' +
-      '<th scope="col">Tipo de Aposta</th>' +
-      '<th scope="col">Opção</th>' +
-      '</tr></thead>' +
-      '<tbody>';
-
-    for (let quote of game['quotes']) {
-      content += addQuote(game['id'], quote);
-    }
-    content += '</tbody></table>';
-
-    $('#quotes').html(content);
-  }
-
   document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
-
-    // TODO start loading spinner
-    console.log(new Date(), 'Fetching data');
-    return firebase.functions().httpsCallable('getGame')({ id: id }).then(function (result) {
-      try {
-        // TODO stop loading spinner
-        console.log(new Date(), 'Received data from function');
-        const data = result['data'];
-        console.log(data);
-
-        if (data['error']) {
-          throw data['error'];
-        }
-
-        fillContent(data);
-
-        $('.bet-value').on('input', function() {
-          setBetValue($(this).val());
-          updateExpectedReturn();
-        });
-
-        $('[data-option-id]').on('click', function() {
-          if ($(this).attr('data-option-selected')) {
-            removeOption($(this).attr('data-option-id'));
-          } else {
-            addOption({
-              id: $(this).attr('data-option-id'),
-              quote: parseFloat($(this).attr('data-option-quote')),
-              gameId: $(this).attr('data-option-game-id')
-            });
-          }
-
-          updateOptions();
-          updateExpectedReturn();
-        });
-
-        updateOptions();
-        updateBetValue();
-        updateExpectedReturn();
-      } catch (e) {
-        // TODO alert
-        console.error(e);
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        $('#login-form').hide();
+        $('#user-details .email').text(user.email);
+        $('#user-details').show();
+      } else {
+        $('#login-form').show();
+        $('#user-details').hide();
+        $('#user-details #email').text();
       }
+    });
+
+    $('#login-form').on('submit', function(e) {
+      e.preventDefault();
+
+      login($('#email').val(), $('#password').val());
+
+      return false;
+    });
+
+    $('#logout').on('click', function() {
+      logout();
     });
   });
 </script>
