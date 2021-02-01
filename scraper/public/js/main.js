@@ -61,14 +61,11 @@ function updateExpectedReturn() {
 }
 
 function updateCurrentQuote() {
-  $('.current-quote-text').text(getCurrentQuote());
+  $('.current-quote-text').text(getCurrentQuote().toFixed(2));
 }
 
 function format(valueInCents) {
-  let cents = (valueInCents % 100).toFixed(0);
-  if (cents.length === 1) cents = cents + '0';
-
-  return 'R$ ' + Math.floor(valueInCents / 100) + ',' + cents;
+  return 'R$ ' + (valueInCents / 100).toFixed(2).replace('.', ',');
 }
 
 function getOptions() {
