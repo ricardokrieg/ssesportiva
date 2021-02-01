@@ -5,10 +5,8 @@ body {
   padding-top: 4.5rem;
 }
 
-.accordion-body {
-  .card {
-    margin-bottom: $spacer;
-  }
+.card {
+  margin-bottom: $spacer;
 }
 
 button[data-option-selected] {

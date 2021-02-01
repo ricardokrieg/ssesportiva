@@ -139,17 +139,19 @@ function placeBet() {
 }
 
 function searchBet(code) {
-  // TODO start only a local spinner
   startSpinner();
 
   firebase.functions().httpsCallable('searchBet')({ code })
     .then(function (result) {
       stopSpinner();
 
-      // TODO show Bet modal
+      const data = result['data'];
 
-      console.log('SEARCH BET RESULT');
-      console.log(result);
+      if (data['error']) {
+        showError(data['error'], "Erro", data['error']);
+      }
+
+      showTicket(data);
     })
     .catch(function(error) {
       stopSpinner();
@@ -204,4 +206,43 @@ function showError(error, title, message) {
 
 function showDefaultError(error) {
   showError(error, "Erro", "Aconteceu um erro");
+}
+
+function showTicket(data) {
+  const value = data['value'];
+  const expectedReturn = data['expectedReturn'];
+  const options = data['options'];
+
+  if (!value || !expectedReturn || !options || options.length < 1) {
+    return;
+  }
+
+  let content = '';
+
+  for (let option of options) {
+    const group = option['group'];
+    const championship = option['championship'];
+    const game = option['game'];
+    const quoteType = option['quoteType'];
+    const quote = option['quote'];
+    const title = option['title'];
+
+    if (!group || !championship || !game || !quoteType || !quote || !title) {
+      continue;
+    }
+
+    content += '<div class="card">' +
+      '<div class="card-header">' + title + '</div>' +
+      '<div class="card-body">' +
+      group + ' - ' + championship + '<br>' +
+      game + '<br>' +
+      quoteType + '<br>' +
+      'Cotação: ' + quote +
+      '</div>' +
+      '</div>';
+  }
+
+  $('#ticket-modal .modal-body').html(content);
+  const modal = new bootstrap.Modal(document.getElementById('ticket-modal'), {});
+  modal.show();
 }

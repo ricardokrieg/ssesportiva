@@ -7390,7 +7390,7 @@ body {
   min-height: 75rem;
   padding-top: 4.5rem; }
 
-.accordion-body .card {
+.card {
   margin-bottom: 1rem; }
 
 button[data-option-selected] {
