@@ -392,7 +392,6 @@ exports.placeBet = functions
         const gameTitle = gameData['title'];
         const gameDate = gameData['date'];
 
-        // TODO find championship and copy data from it
         const championshipRef = championshipsCol.doc(gameData['championshipId']);
         const championshipSnapshot = await championshipRef.get();
 
@@ -447,7 +446,6 @@ exports.placeBet = functions
 
       betData['expectedReturn'] = totalQuote * betValue;
 
-      // TODO check if generated code already exists
       const code = await generateBetCode();
 
       await betsCol.doc(String(code)).set(betData);

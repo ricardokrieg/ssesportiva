@@ -51,7 +51,24 @@
     </div>
 </nav>
 
-<main id="main" class="container">
+<div class="modal fade" id="alert-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+<div id="spinner" class="text-center m-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+</div>
+
+<main id="main" class="container" style="display: none;">
     <form id="login-form" style="display: none;">
         <input type="email" id="email">
         <input type="password" id="password">
@@ -72,7 +89,11 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    startSpinner();
+
     firebase.auth().onAuthStateChanged(function(user) {
+      stopSpinner();
+
       if (user) {
         $('#login-form').hide();
         $('#user-details .email').text(user.email);

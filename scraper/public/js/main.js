@@ -97,7 +97,6 @@ function addOption(option) {
   }
 
   options.push(option);
-
   setOptions(options);
 }
 
@@ -122,46 +121,87 @@ function placeBet() {
     options: getOptions(),
   };
 
-  // TODO start spinner
-  firebase.functions().httpsCallable('placeBet')(params).then(function (result) {
-    // TODO stop spinner
-    // TODO handle error with .catch
-    console.log('PLACE BET RESULT');
-    console.log(result);
-  });
+  startSpinner();
+
+  firebase.functions().httpsCallable('placeBet')(params)
+    .then(function (result) {
+      stopSpinner();
+
+      // TODO show success alert
+
+      console.log('PLACE BET RESULT');
+      console.log(result);
+    })
+    .catch(function(error) {
+      stopSpinner();
+      showDefaultError(error);
+    });
 }
 
 function searchBet(code) {
-  // TODO start spinner
-  firebase.functions().httpsCallable('searchBet')({ code }).then(function (result) {
-    // TODO stop spinner
-    // TODO handle error with .catch
-    console.log('SEARCH BET RESULT');
-    console.log(result);
-  });
+  // TODO start only a local spinner
+  startSpinner();
+
+  firebase.functions().httpsCallable('searchBet')({ code })
+    .then(function (result) {
+      stopSpinner();
+
+      // TODO show Bet modal
+
+      console.log('SEARCH BET RESULT');
+      console.log(result);
+    })
+    .catch(function(error) {
+      stopSpinner();
+      showDefaultError(error);
+    });
 }
 
 function login(email, password) {
+  // TODO start local spinner
+
   firebase.auth().signInWithEmailAndPassword(email, password)
     .then(function (userCredential) {
-      const user = userCredential.user;
-      console.log(user);
-      console.log(user.email);
     })
     .catch(function (error) {
-      // TODO alert
-      const errorCode = error.code;
-      const errorMessage = error.message;
+      showError(error, "Erro", "Email ou Senha incorreto");
     });
 }
 
 function logout() {
+  // TODO start local spinner
+
   firebase.auth().signOut()
     .then(function () {
-      // Sign-out successful.
     })
     .catch(function (error) {
-      // An error happened.
-      // TODO alert
+      showDefaultError(error);
     });
+}
+
+function startSpinner() {
+  $('#spinner').show();
+  $('#main').hide();
+}
+
+function stopSpinner() {
+  $('#spinner').hide();
+  $('#main').show();
+}
+
+function showError(error, title, message) {
+  // TODO notify error
+
+  const id = 'alert-modal';
+  const el = $('#' + id);
+
+  $(el).find('.modal-title').text(title);
+  $(el).find('.modal-body').text(message);
+
+  const modal = new bootstrap.Modal(document.getElementById(id), {});
+  modal.show();
+}
+
+function showDefaultError(error) {
+  showError(error, "Erro", "Aconteceu um erro");
 }

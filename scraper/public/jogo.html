@@ -51,24 +51,65 @@
     </div>
 </nav>
 
-<nav class="navbar navbar-light bg-light">
-    <div class="container-fluid">
-        <div class="d-flex">
-            <input class="form-control me-2 bet-value" type="text" placeholder="Valor da Aposta">
-            <input class="form-control me-2 expected-return" type="text" placeholder="R$ 0,00" disabled="disabled">
+<div class="modal fade" id="alert-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
 
-            <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#bet-modal">Finalizar</button>
+            <div class="modal-body"></div>
         </div>
     </div>
-</nav>
+</div>
 
-<main id="main" class="container">
-    <div class="container-fluid">
-        <h1 id="title"></h1>
-        <hr>
+<div class="modal fade" id="bet-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cupom de Apostas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body"></div>
+
+            <div class="modal-footer">
+                Cotação: <span class="current-quote-text"></span><br>
+                Possível Retorno: <span class="expected-return-text"></span><br>
+
+                <input class="form-control me-2 bet-value" type="text" placeholder="Valor da Aposta">
+
+                <button id="place-bet" type="button" class="btn btn-primary">Finalizar Aposta</button>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div class="container-fluid" id="quotes">
+<div id="spinner" class="text-center m-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+</div>
+
+<main id="main" style="display: none;">
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            <div class="d-flex">
+                <input class="form-control me-2 bet-value" type="text" placeholder="Valor da Aposta">
+                <input class="form-control me-2 expected-return" type="text" placeholder="R$ 0,00" disabled="disabled">
+
+                <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#bet-modal">Finalizar</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="container-fluid">
+            <h1 id="title"></h1>
+            <hr>
+        </div>
+
+        <div class="container-fluid" id="quotes">
+        </div>
     </div>
 </main>
 
@@ -111,52 +152,56 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    startSpinner();
+
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
 
-    // TODO start loading spinner
-    console.log(new Date(), 'Fetching data');
-    return firebase.functions().httpsCallable('getGame')({ id: id }).then(function (result) {
-      try {
-        // TODO stop loading spinner
-        console.log(new Date(), 'Received data from function');
-        const data = result['data'];
-        console.log(data);
+    return firebase.functions().httpsCallable('getGame')({ id: id })
+      .then(function (result) {
+        stopSpinner();
 
-        if (data['error']) {
-          throw data['error'];
-        }
+        try {
+          const data = result['data'];
 
-        fillContent(data);
-
-        $('.bet-value').on('input', function() {
-          setBetValue($(this).val());
-          updateExpectedReturn();
-        });
-
-        $('[data-option-id]').on('click', function() {
-          if ($(this).attr('data-option-selected')) {
-            removeOption($(this).attr('data-option-id'));
-          } else {
-            addOption({
-              id: $(this).attr('data-option-id'),
-              quote: parseFloat($(this).attr('data-option-quote')),
-              gameId: $(this).attr('data-option-game-id')
-            });
+          if (data['error']) {
+            showDefaultError(data['error']);
+            return;
           }
 
-          updateOptions();
-          updateExpectedReturn();
-        });
+          fillContent(data);
 
-        updateOptions();
-        updateBetValue();
-        updateExpectedReturn();
-      } catch (e) {
-        // TODO alert
-        console.error(e);
-      }
-    });
+          $('.bet-value').on('input', function() {
+            setBetValue($(this).val());
+            updateExpectedReturn();
+          });
+
+          $('[data-option-id]').on('click', function() {
+            if ($(this).attr('data-option-selected')) {
+              removeOption($(this).attr('data-option-id'));
+            } else {
+              addOption({
+                id: $(this).attr('data-option-id'),
+                quote: parseFloat($(this).attr('data-option-quote')),
+                gameId: $(this).attr('data-option-game-id')
+              });
+            }
+
+            updateOptions();
+            updateExpectedReturn();
+          });
+
+          updateOptions();
+          updateBetValue();
+          updateExpectedReturn();
+        } catch (error) {
+          showDefaultError(error);
+        }
+      })
+      .catch(function(error) {
+        stopSpinner();
+        showDefaultError(error);
+      })
   });
 </script>
 
