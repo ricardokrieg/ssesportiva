@@ -142,11 +142,15 @@
     const id = game['id'];
     const quote = game['quote'];
     const championshipId = championship['id'];
+    const championshipTitle = championship['title'];
+    const group = championship['group'];
 
     if (quote === null) {
       // TODO alert
       return '';
     }
+
+    const quoteType = quote['type'];
 
     const optionCasa = findOption(quote, 'Casa');
     const optionEmpate = findOption(quote, 'Empate');
@@ -160,11 +164,11 @@
     const text = title.replace(' x ', '<br>') + '<br>' + date.replace('/2021', '');
     const url = id ? ('jogo.html?id=' + id + '&campeonato=' + championshipId) : '';
 
-    return '<tr>' +
+    return '<tr data-option-group="' + group + '" data-option-championship="' + championshipTitle + '" data-option-game="' + title + '" data-option-game-id="' + id + '" data-option-quote-type="' + quoteType + '">' +
       '<td><a href="' + url + '">' + text + '</a></td>' +
-      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionCasa['id'] + '" data-option-quote="' + optionCasa['quote'] + '" data-option-game-id="' + id + '">' + optionCasa['quote'] + '</button>' + '</td>' +
-      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionEmpate['id'] + '" data-option-quote="' + optionEmpate['quote'] + '" data-option-game-id="' + id + '">' + optionEmpate['quote'] + '</button>' + '</td>' +
-      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionFora['id'] + '" data-option-quote="' + optionFora['quote'] + '" data-option-game-id="' + id + '">' + optionFora['quote'] + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionCasa['id'] + '" data-option-quote="' + optionCasa['quote'] + '" data-option-title="' + optionCasa['title'] + '">' + optionCasa['quote'] + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionEmpate['id'] + '" data-option-quote="' + optionEmpate['quote'] + '" data-option-title="' + optionEmpate['title'] + '">' + optionEmpate['quote'] + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionFora['id'] + '" data-option-quote="' + optionFora['quote'] + '" data-option-title="' + optionFora['title'] + '">' + optionFora['quote'] + '</button>' + '</td>' +
       '</tr>';
   }
 
@@ -188,6 +192,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('bet-modal').addEventListener('show.bs.modal', function () {
+      prepareBetModal();
+    });
+
     startSpinner();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -219,7 +227,12 @@
               addOption({
                 id: $(this).attr('data-option-id'),
                 quote: parseFloat($(this).attr('data-option-quote')),
-                gameId: $(this).attr('data-option-game-id')
+                title: $(this).attr('data-option-title'),
+                group: $(this).closest('tr').attr('data-option-group'),
+                championship: $(this).closest('tr').attr('data-option-championship'),
+                quoteType: $(this).closest('tr').attr('data-option-quote-type'),
+                game: $(this).closest('tr').attr('data-option-game'),
+                gameId: $(this).closest('tr').attr('data-option-game-id'),
               });
             }
 

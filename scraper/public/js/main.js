@@ -81,7 +81,17 @@ function setOptions(options) {
 }
 
 function addOption(option) {
-  if (!option['id'] || !option['quote'] || !option['gameId']) {
+  const id = option['id'];
+  const group = option['group'];
+  const championship = option['championship'];
+  const game = option['game'];
+  const gameId = option['gameId'];
+  const quoteType = option['quoteType'];
+  const quote = option['quote'];
+  const title = option['title'];
+
+  if (!id || !group || !championship || !game || !gameId || !quoteType || !quote || !title) {
+    // TODO alert? notify?
     return;
   }
 
@@ -242,4 +252,48 @@ function showTicket(data) {
   $('#ticket-modal .modal-body').html(content);
   const modal = new bootstrap.Modal(document.getElementById('ticket-modal'), {});
   modal.show();
+}
+
+function prepareBetModal() {
+  const options = getOptions();
+  let content = '';
+
+  for (let option of options) {
+    const id = option['id'];
+    const group = option['group'];
+    const championship = option['championship'];
+    const game = option['game'];
+    const quoteType = option['quoteType'];
+    const quote = option['quote'];
+    const title = option['title'];
+
+    if (!id || !group || !championship || !game || !quoteType || !quote || !title) {
+      continue;
+    }
+
+    content += '<div class="card">' +
+      '<div class="card-header d-flex justify-content-between">' +
+      '<div>' + title + '</div>' +
+      '<a href="javascript:void(0);" onclick="onRemoveOption(this, \'' + id + '\')">X Excluir</a>' +
+      '</div>' +
+      '<div class="card-body">' +
+      group + ' - ' + championship + '<br>' +
+      game + '<br>' +
+      quoteType + '<br>' +
+      'Cotação: ' + quote +
+      '</div>' +
+      '</div>';
+  }
+
+  $('#bet-modal .modal-body').html(content);
+  return true;
+}
+
+function onRemoveOption(element, id) {
+  $(element).closest('.card').remove();
+  removeOption(id);
+
+  updateOptions();
+  updateExpectedReturn();
+  updateCurrentQuote();
 }
