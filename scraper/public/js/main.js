@@ -304,13 +304,21 @@ function prepareBetModal() {
     const title = option['title'];
 
     if (!id || !group || !championship || !game || !quoteType || !quote || !title) {
-      continue;
+      firebase.functions().httpsCallable('reportError')({ error: null, title: 'invalid option for bet modal', message: JSON.stringify(option) });
+
+      if (id) {
+        removeOption(id);
+        continue;
+      } else {
+        clear();
+        return false;
+      }
     }
 
     content += '<div class="card">' +
       '<div class="card-header d-flex justify-content-between">' +
       '<div>' + title + '</div>' +
-      '<a href="javascript:void(0);" onclick="onRemoveOption(this, \'' + id + '\')">X Excluir</a>' +
+      '<a href="javascript:void(0);" onclick="onRemoveOption(this, \'' + id + '\')"><badge class="badge bg-danger">Excluir</badge></a>' +
       '</div>' +
       '<div class="card-body">' +
       group + ' - ' + championship + '<br>' +

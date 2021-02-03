@@ -1,3 +1,26 @@
+$astral: #2D6F9B;
+$turkishRose: #AE7C85;
+$poloBlue: #84AFD4;
+$santasGray: #9E9EAE;
+$athensGray: #EAEAEF;
+$aquaForest: #5daf78;
+$anzac: #da9f40;
+$pomegranate: #f44336;
+
+$primary: #20A7DB;
+$lightAccent: #6DC3DB;
+$darkAccent: #839DAE;
+$light: #F9F8F7;
+$dark:  #194165;
+
+$info: $lightAccent;
+$success: $aquaForest;
+$warning: $anzac;
+$danger: $pomegranate;
+
+$body-bg: $light;
+$body-color: $dark;
+
 @import '../bootstrap-5.0.0-beta1/scss/bootstrap';
 
 body {
@@ -5,10 +28,23 @@ body {
   padding-top: 4.5rem;
 }
 
+nav.navbar {
+  background-color: $primary;
+}
+
 .card {
   margin-bottom: $spacer;
 }
 
 button[data-option-selected] {
-  background-color: red !important;
+  background-color: $warning;
+  border-color: $warning;
+}
+
+.accordion-button.collapsed {
+  border-bottom-width: 1px;
+}
+
+.accordion-collapse {
+  border-width: 0 1px 1px;
 }

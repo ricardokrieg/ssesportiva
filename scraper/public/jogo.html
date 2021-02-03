@@ -25,7 +25,7 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+<nav class="navbar navbar-expand-md navbar-dark fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand" href="/"><img src="img/logo.png" height="27px" /></a>
 
@@ -51,19 +51,6 @@
     </div>
 </nav>
 
-<div class="modal fade" id="alert-modal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body bg-danger text-white"></div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="bet-modal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -75,13 +62,40 @@
             <div class="modal-body"></div>
 
             <div class="modal-footer">
-                Cotação: <span class="current-quote-text"></span><br>
-                Possível Retorno: <span class="expected-return-text"></span><br>
+                <table class="table table-borderless">
+                    <tr>
+                        <td>Cotação</td>
+                        <td><span class="current-quote-text"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Possível Retorno:</td>
+                        <td><span class="expected-return-text"></span></td>
+                    </tr>
+                </table>
 
-                <input class="form-control me-2 bet-value" type="text" placeholder="Valor da Aposta">
+                <div class="row">
+                    <div class="col-6">
+                        <input class="form-control me-2 bet-value" type="text" placeholder="Valor da Aposta">
+                    </div>
 
-                <button id="place-bet" type="button" class="btn btn-primary">Finalizar Aposta</button>
+                    <div class="col-6">
+                        <button id="place-bet" type="button" class="btn btn-success">Finalizar Aposta</button>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="alert-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body bg-danger text-white"></div>
         </div>
     </div>
 </div>
@@ -97,7 +111,7 @@
                 <input class="form-control me-2 bet-value" type="text" placeholder="Valor da Aposta">
                 <input class="form-control me-2 expected-return" type="text" placeholder="R$ 0,00" disabled="disabled">
 
-                <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#bet-modal">Finalizar</button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bet-modal">Finalizar</button>
             </div>
         </div>
     </nav>
@@ -119,9 +133,7 @@
 <script src="js/main.js"></script>
 
 <script>
-  function addQuote(gameId, gameTitle, quote) {
-    const group = ;
-    const championshipTitle = ;
+  function addQuote(group, championshipTitle, gameId, gameTitle, quote) {
     const type = quote['type'];
 
     let content = '<tr><td colspan="2" class="table-primary text-center">' + type + '</td></tr>';
@@ -146,7 +158,7 @@
       '<tbody>';
 
     for (let quote of game['quotes']) {
-      content += addQuote(game['id'], game['title'], quote);
+      content += addQuote(game['group'], game['championshipTitle'], game['id'], game['title'], quote);
     }
     content += '</tbody></table>';
 
@@ -154,6 +166,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('bet-modal').addEventListener('show.bs.modal', function () {
+      prepareBetModal();
+    });
+
     startSpinner();
 
     const urlParams = new URLSearchParams(window.location.search);
