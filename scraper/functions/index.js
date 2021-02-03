@@ -66,7 +66,7 @@ function isValidBetOption(option) {
   if (!isValidString(championshipId)) return false;
   if (!isValidString(game)) return false;
   if (!isValidString(gameId)) return false;
-  if (!isValidString(gameDate) || moment(gameDate, 'DD/MM/YYYY hh:mm').isBefore(moment().tz('America/Sao_Paulo'))) return false;
+  if (!isValidString(gameDate) || moment.tz(gameDate, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'))) return false;
   if (!isValidString(quoteType)) return false;
   if (!quote || isNaN(quote) || quote <= 0) return false;
   if (!isValidString(title)) return false;
@@ -103,9 +103,18 @@ function isValidQuoteOption(option) {
     title,
   } = option;
 
-  if (!isValidString(id)) return false;
-  if (!quote || isNaN(quote) || quote <= 0) return false;
-  if (!isValidString(title)) return false;
+  if (!isValidString(id)) {
+    console.error(new Error(`invalid quote.option.id: ${id}`));
+    return false;
+  }
+  if (!quote || isNaN(quote) || quote <= 0) {
+    console.error(new Error(`invalid quote.option.quote: ${quote}`));
+    return false;
+  }
+  if (!isValidString(title)) {
+    console.error(new Error(`invalid quote.option.title: ${title}`));
+    return false;
+  }
 
   return true;
 }
@@ -116,10 +125,19 @@ function isValidGameQuote(quote) {
     options,
   } = quote;
 
-  if (!isValidString(type)) return false;
-  if (!options || options.length < 1) return false;
+  if (!isValidString(type)) {
+    console.error(new Error(`invalid game.quote.type: ${type}`));
+    return false;
+  }
+  if (!options || options.length < 1) {
+    console.error(new Error(`invalid game.quote.options: ${options}`));
+    return false;
+  }
   // TODO use a filter/select to keep only valid options
-  if (!_.every(options, isValidQuoteOption)) return false;
+  if (!_.every(options, isValidQuoteOption)) {
+    console.error(new Error(`invalid game.quote.options: _every_`));
+    return false;
+  }
   // for (let option of options) { if (!isValidQuoteOption(option)) return false; }
 
   return true;
@@ -127,6 +145,8 @@ function isValidGameQuote(quote) {
 
 function isValidGame(game) {
   const {
+    group,
+    championshipTitle,
     championshipId,
     date,
     id,
@@ -134,13 +154,41 @@ function isValidGame(game) {
     quotes,
   } = game;
 
-  if (!isValidString(championshipId)) return false;
-  if (!isValidString(date) || moment(date, 'DD/MM/YYYY hh:mm').isBefore(moment().tz('America/Sao_Paulo'))) return false;
-  if (!isValidString(id)) return false;
-  if (!isValidString(title)) return false;
-  if (!quotes || quotes.length < 1) return false;
+  if (!isValidString(group)) {
+    console.error(new Error(`invalid game.group: ${group}`));
+    return false;
+  }
+  if (!isValidString(championshipTitle)) {
+    console.error(new Error(`invalid game.championshipTitle: ${championshipTitle}`));
+    return false;
+  }
+  if (!isValidString(championshipId)) {
+    console.error(new Error(`invalid game.championshipId: ${championshipId}`));
+    return false;
+  }
+  if (!isValidString(date) || moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'))) {
+    console.error(new Error(`invalid game.date: ${date}`));
+    console.error(new Error(`Game Date: ${moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo')}`));
+    console.error(new Error(`Current Date: ${moment().tz('America/Sao_Paulo')}`));
+    return false;
+  }
+  if (!isValidString(id)) {
+    console.error(new Error(`invalid game.id: ${id}`));
+    return false;
+  }
+  if (!isValidString(title)) {
+    console.error(new Error(`invalid game.title: ${title}`));
+    return false;
+  }
+  if (!quotes || quotes.length < 1) {
+    console.error(new Error(`invalid game.quotes: ${quotes}`));
+    return false;
+  }
   // TODO use a filter/select to keep only valid quotes
-  if (!_.every(quotes, isValidGameQuote)) return false;
+  if (!_.every(quotes, isValidGameQuote)) {
+    console.error(new Error(`invalid game.quotes: _every_`));
+    return false;
+  }
   // for (let quote of quotes) { if (!isValidGameQuote(quote)) return false; }
 
   return true;
@@ -153,9 +201,18 @@ function isValidChampionshipGame(game) {
     quote,
   } = game;
 
-  if (!isValidString(date) || moment(date, 'DD/MM/YYYY hh:mm').isBefore(moment().tz('America/Sao_Paulo'))) return false;
-  if (!isValidString(title)) return false;
-  if (!quote || !isValidGameQuote(quote) || quote['type'] !== 'Vencedor do Encontro') return false;
+  if (!isValidString(date) || moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'))) {
+    console.error(new Error(`invalid championship.game.date: ${date}`));
+    return false;
+  }
+  if (!isValidString(title)) {
+    console.error(new Error(`invalid championship.game.title: ${title}`));
+    return false;
+  }
+  if (!quote || !isValidGameQuote(quote) || quote['type'] !== 'Vencedor do Encontro') {
+    console.error(new Error(`invalid championship.game.quote: ${quote}`));
+    return false;
+  }
 
   return true;
 }
@@ -168,20 +225,41 @@ function isValidChampionship(championship) {
     games,
   } = championship;
 
-  if (!isValidString(group)) return false;
-  if (!isValidString(id)) return false;
-  if (!isValidString(title)) return false;
-  if (!games || games.length < 1) return false;
+  if (!isValidString(group)) {
+    console.error(new Error(`invalid championship.group: ${group}`));
+    return false;
+  }
+  if (!isValidString(id)) {
+    console.error(new Error(`invalid championship.id: ${id}`));
+    return false;
+  }
+  if (!isValidString(title)) {
+    console.error(new Error(`invalid championship.title: ${title}`));
+    return false;
+  }
+  if (!games || games.length < 1) {
+    console.error(new Error(`invalid championship.games: ${games}`));
+    return false;
+  }
   // TODO use a filter/select to keep only valid games
-  if (!_.every(games, isValidChampionshipGame)) return false;
+  if (!_.every(games, isValidChampionshipGame)) {
+    console.error(new Error(`invalid championship.games: _every_`));
+    return false;
+  }
   // for (let game of games) { if (!isValidChampionshipGame(game)) return false; }
 
   return true;
 }
 
 function isValidMenu(menu) {
-  if (typeof menu !== 'object') return false;
-  if (menu.length < 1) return false;
+  if (typeof menu !== 'object') {
+    console.error(new Error(`invalid menu: ${menu}`));
+    return false;
+  }
+  if (menu.length < 1) {
+    console.error(new Error(`invalid menu.length: ${menu.length}`));
+    return false;
+  }
 
   // TODO use a filter/select to keep only valid groups
   for (let group of menu) {
@@ -190,8 +268,15 @@ function isValidMenu(menu) {
       championships,
     } = group;
 
-    if (!isValidString(name)) return false;
-    if (!championships || championships.length < 1) return false;
+    if (!isValidString(name)) {
+      console.error(new Error(`invalid menu.group.name: ${name}`));
+      return false;
+    }
+    if (!championships || championships.length < 1) {
+      console.error(new Error(`invalid menu.group.championships: ${championships}`));
+      return false;
+    }
+
     // TODO use a filter/select to keep only valid championships
     for (let championship of championships) {
       const {
@@ -199,8 +284,14 @@ function isValidMenu(menu) {
         title,
       } = championship;
 
-      if (!isValidString(id)) return false;
-      if (!isValidString(title)) return false;
+      if (!isValidString(id)) {
+        console.error(new Error(`invalid menu.group.championship.id: ${id}`));
+        return false;
+      }
+      if (!isValidString(title)) {
+        console.error(new Error(`invalid menu.group.championship.title: ${title}`));
+        return false;
+      }
     }
   }
 
@@ -380,7 +471,7 @@ async function scrape() {
 exports.scrape = functions
   .runWith(runtimeOpts)
   .pubsub
-  .schedule('every 4 hours')
+  .schedule('every 2 minutes')
   .onRun(async (context) => {
     console.log('Starting the scraper...');
     console.log(`Time now: ${moment().tz('America/Sao_Paulo')}`);
@@ -422,7 +513,9 @@ exports.scrape = functions
             gameData['id'] = game['id'];
             gameData['quote'] = quoteData;
 
-            game['championshipId'] = championship['id'];
+            game['group'] = championshipData['group'];
+            game['championshipTitle'] = championshipData['title'];
+            game['championshipId'] = championshipData['id'];
             if (isValidGame(game)) {
               await gamesCol.doc(game['id']).set({ ...game, keep: true });
             } else {
@@ -675,7 +768,7 @@ exports.reportError = functions
   .https
   .onCall(async (data, context) => {
     try {
-      console.error(`Error Reported: ${JSON.stringify(data)}`);
+      console.error(new Error(`Error Reported: ${JSON.stringify(data)}`));
     } catch (e) {
       console.error(e);
     }

@@ -91,7 +91,7 @@ function addOption(option) {
   const title = option['title'];
 
   if (!id || !group || !championship || !game || !gameId || !quoteType || !quote || !title) {
-    showError(new Error("Invalid option: " + JSON.stringify(option)), 'Erro', 'Ocorreu um erro');
+    showError("Invalid option: " + JSON.stringify(option), 'Erro', 'Ocorreu um erro');
     return;
   }
 
@@ -99,7 +99,7 @@ function addOption(option) {
 
   for (let existingOption of options) {
     if (existingOption['gameId'] === option['gameId']) {
-      showError(new Error("Invalid option (duplicated game): " + JSON.stringify(option)), 'Erro', 'Você não pode fazer mais de uma aposta no mesmo jogo nesse cupom!');
+      showError("Invalid option (duplicated game): " + JSON.stringify(option), 'Erro', 'Você não pode fazer mais de uma aposta no mesmo jogo nesse cupom!');
       return;
     }
   }
