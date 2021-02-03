@@ -91,7 +91,7 @@ function addOption(option) {
   const title = option['title'];
 
   if (!id || !group || !championship || !game || !gameId || !quoteType || !quote || !title) {
-    // TODO alert? notify?
+    showError(new Error("Invalid option: " + JSON.stringify(option)), 'Erro', 'Ocorreu um erro');
     return;
   }
 
@@ -99,6 +99,7 @@ function addOption(option) {
 
   for (let existingOption of options) {
     if (existingOption['gameId'] === option['gameId']) {
+      showError(new Error("Invalid option (duplicated game): " + JSON.stringify(option)), 'Erro', 'Você não pode fazer mais de uma aposta no mesmo jogo nesse cupom!');
       return;
     }
   }
@@ -135,7 +136,7 @@ function placeBet() {
       stopSpinner();
 
       // TODO show success alert
-
+      // TODO remove logs
       console.log('PLACE BET RESULT');
       console.log(result);
     })
@@ -199,7 +200,7 @@ function stopSpinner() {
 }
 
 function showError(error, title, message) {
-  // TODO notify error
+  firebase.functions().httpsCallable('reportError')({ error, title, message });
 
   const id = 'alert-modal';
   const el = $('#' + id);

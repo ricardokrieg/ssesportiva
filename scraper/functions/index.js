@@ -2,6 +2,7 @@ const rp = require('request-promise');
 const $ = require('cheerio');
 const Promise = require('bluebird');
 const moment = require('moment');
+require('moment-timezone');
 const debug = require('debug')('betting-system');
 const util = require('util');
 const _ = require('lodash');
@@ -42,6 +43,169 @@ const MIN_BET_VALUE = 200; // R$2,00
 const MAX_BET_VALUE = 100000; // R$1.000,00
 const MIN_QUOTE_VALUE = 2;
 
+function isValidString(value) {
+  return value && value.length > 0 && (typeof value === 'string');
+}
+
+function isValidBetOption(option) {
+  const {
+    group,
+    championship,
+    championshipId,
+    game,
+    gameId,
+    gameDate,
+    quoteType,
+    quote,
+    title,
+    id
+  } = option;
+
+  if (!isValidString(group)) return false;
+  if (!isValidString(championship)) return false;
+  if (!isValidString(championshipId)) return false;
+  if (!isValidString(game)) return false;
+  if (!isValidString(gameId)) return false;
+  if (!isValidString(gameDate) || moment(gameDate, 'DD/MM/YYYY hh:mm').isBefore(moment().tz('America/Sao_Paulo'))) return false;
+  if (!isValidString(quoteType)) return false;
+  if (!quote || isNaN(quote) || quote <= 0) return false;
+  if (!isValidString(title)) return false;
+  if (!isValidString(id)) return false;
+
+  return true;
+}
+
+function isValidBet(bet) {
+  const {
+    expectedReturn,
+    value,
+    confirmedAt,
+    code,
+    options,
+  } = bet;
+
+  if (!expectedReturn || isNaN(expectedReturn) || expectedReturn <= 0) return false;
+  if (!value || isNaN(value) || value < MIN_BET_VALUE || value > MAX_BET_VALUE) return false;
+  if (confirmedAt && confirmedAt > new Date()) return false; // TODO validate date (this is a Firestore datetime)
+  if (!isValidString(code) || code.length !== 6) return false;
+  if (!options || options.length < 1) return false;
+  if (!_.every(options, isValidBetOption)) return false;
+  // const totalQuote = _.reduce(options, 'quote'); // TODO sum all quotes
+  // for (let option of options) { if (!isValidBetOption(option)) return false; }
+
+  return true;
+}
+
+function isValidQuoteOption(option) {
+  const {
+    id,
+    quote,
+    title,
+  } = option;
+
+  if (!isValidString(id)) return false;
+  if (!quote || isNaN(quote) || quote <= 0) return false;
+  if (!isValidString(title)) return false;
+
+  return true;
+}
+
+function isValidGameQuote(quote) {
+  const {
+    type,
+    options,
+  } = quote;
+
+  if (!isValidString(type)) return false;
+  if (!options || options.length < 1) return false;
+  // TODO use a filter/select to keep only valid options
+  if (!_.every(options, isValidQuoteOption)) return false;
+  // for (let option of options) { if (!isValidQuoteOption(option)) return false; }
+
+  return true;
+}
+
+function isValidGame(game) {
+  const {
+    championshipId,
+    date,
+    id,
+    title,
+    quotes,
+  } = game;
+
+  if (!isValidString(championshipId)) return false;
+  if (!isValidString(date) || moment(date, 'DD/MM/YYYY hh:mm').isBefore(moment().tz('America/Sao_Paulo'))) return false;
+  if (!isValidString(id)) return false;
+  if (!isValidString(title)) return false;
+  if (!quotes || quotes.length < 1) return false;
+  // TODO use a filter/select to keep only valid quotes
+  if (!_.every(quotes, isValidGameQuote)) return false;
+  // for (let quote of quotes) { if (!isValidGameQuote(quote)) return false; }
+
+  return true;
+}
+
+function isValidChampionshipGame(game) {
+  const {
+    date,
+    title,
+    quote,
+  } = game;
+
+  if (!isValidString(date) || moment(date, 'DD/MM/YYYY hh:mm').isBefore(moment().tz('America/Sao_Paulo'))) return false;
+  if (!isValidString(title)) return false;
+  if (!quote || !isValidGameQuote(quote) || quote['type'] !== 'Vencedor do Encontro') return false;
+
+  return true;
+}
+
+function isValidChampionship(championship) {
+  const {
+    group,
+    id,
+    title,
+    games,
+  } = championship;
+
+  if (!isValidString(group)) return false;
+  if (!isValidString(id)) return false;
+  if (!isValidString(title)) return false;
+  if (!games || games.length < 1) return false;
+  // TODO use a filter/select to keep only valid games
+  if (!_.every(games, isValidChampionshipGame)) return false;
+  // for (let game of games) { if (!isValidChampionshipGame(game)) return false; }
+
+  return true;
+}
+
+function isValidMenu(menu) {
+  if (typeof menu !== 'object') return false;
+  if (menu.length < 1) return false;
+
+  // TODO use a filter/select to keep only valid groups
+  for (let group of menu) {
+    const {
+      name,
+      championships,
+    } = group;
+
+    if (!isValidString(name)) return false;
+    if (!championships || championships.length < 1) return false;
+    // TODO use a filter/select to keep only valid championships
+    for (let championship of championships) {
+      const {
+        id,
+        title,
+      } = championship;
+
+      if (!isValidString(id)) return false;
+      if (!isValidString(title)) return false;
+    }
+  }
+
+  return true;
+}
 
 async function getMember(context) {
   const user = context.auth;
@@ -219,6 +383,7 @@ exports.scrape = functions
   .schedule('every 4 hours')
   .onRun(async (context) => {
     console.log('Starting the scraper...');
+    console.log(`Time now: ${moment().tz('America/Sao_Paulo')}`);
 
     const groups = await scrape();
 
@@ -257,19 +422,32 @@ exports.scrape = functions
             gameData['id'] = game['id'];
             gameData['quote'] = quoteData;
 
-            await gamesCol.doc(game['id']).set({ ...game, championshipId: championship['id'], keep: true });
+            game['championshipId'] = championship['id'];
+            if (isValidGame(game)) {
+              await gamesCol.doc(game['id']).set({ ...game, keep: true });
+            } else {
+              console.error(new Error(`invalid game ${game['id']}: ${JSON.stringify(game)}`));
+            }
           }
 
           championshipData['games'].push(gameData);
         }
 
-        await championshipsCol.doc(championship['id']).set({ ...championshipData, keep: true });
+        if (isValidChampionship(championshipData)) {
+          await championshipsCol.doc(championship['id']).set({ ...championshipData, keep: true });
+        } else {
+          console.error(new Error(`invalid championship ${championship['id']}: ${JSON.stringify(championshipData)}`));
+        }
       }
 
       menu.push(groupData);
     }
 
-    await menuCol.doc('snapshot').set({ data: menu });
+    if (isValidMenu(menu)) {
+      await menuCol.doc('snapshot').set({ data: menu });
+    } else {
+      console.error(new Error(`invalid menu: ${JSON.stringify(menu)}`));
+    }
 
     querySnapshot = await championshipsCol.where('keep', '==', false).get();
     for (let docSnapshot of querySnapshot.docs) {
@@ -446,11 +624,16 @@ exports.placeBet = functions
 
       betData['expectedReturn'] = totalQuote * betValue;
 
-      const code = await generateBetCode();
+      const code = String(await generateBetCode());
+      betData['code'] = code;
+      if (isValidBet(betData)) {
+        await betsCol.doc(code).set(betData);
 
-      await betsCol.doc(String(code)).set(betData);
-
-      return { ...betData, code };
+        return betData;
+      } else {
+        console.error(new Error(`invalid bet: ${JSON.stringify(betData)}`));
+        return { error: "Ocorreu um erro!" };
+      }
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };
@@ -485,5 +668,15 @@ exports.searchBet = functions
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.reportError = functions
+  .https
+  .onCall(async (data, context) => {
+    try {
+      console.error(`Error Reported: ${JSON.stringify(data)}`);
+    } catch (e) {
+      console.error(e);
     }
   });

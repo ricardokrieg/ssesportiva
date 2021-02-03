@@ -146,7 +146,7 @@
     const group = championship['group'];
 
     if (quote === null) {
-      // TODO alert
+      firebase.functions().httpsCallable('reportError')({ error: null, title: 'campeonato.html invalid game (missing quote)', message: game });
       return '';
     }
 
@@ -157,7 +157,7 @@
     const optionFora = findOption(quote, 'Fora');
 
     if (optionCasa === null || optionEmpate === null || optionFora === null) {
-      // TODO alert
+      firebase.functions().httpsCallable('reportError')({ error: null, title: 'campeonato.html invalid game (missing option)', message: game });
       return '';
     }
 

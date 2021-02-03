@@ -3,7 +3,7 @@
   "scripts": {
     "deploy": "firebase deploy",
     "start": "firebase emulators:start",
-    "preview": "firebase hosting:channel:deploy beta",
+    "beta": "firebase hosting:channel:deploy beta",
     "build": "node-sass public/scss/main.scss public/css/main.css"
   },
   "engines": {
