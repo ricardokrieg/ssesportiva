@@ -124,10 +124,45 @@ function removeOption(id) {
 }
 
 function placeBet() {
+  const betValue = getBetValueInCents();
+  const options = getOptions();
+
   const params = {
-    betValue: getBetValueInCents(),
-    options: getOptions(),
+    betValue,
+    options,
   };
+
+  if (!betValue || isNaN(betValue) || betValue < 200 || betValue > 100000) {
+    showError(null, 'Erro', 'Valor da aposta inválido');
+    return;
+  }
+
+  if (!options || options.length < 1) {
+    showError(null, 'Erro', 'O cupom está vazio');
+    return;
+  }
+
+  let gameIds = [];
+  let totalQuote = 0.0;
+  for (let option of options) {
+    if (!option['id'] || !option['gameId'] || !option['quote']) {
+      showError(null, 'Erro', 'Aposta inválida');
+      return;
+    }
+
+    if (gameIds.includes(option['gameId'])) {
+      showError(null, 'Erro', 'Você não pode fazer mais de uma aposta no mesmo jogo nesse cupom!');
+      return;
+    }
+
+    gameIds.push(option['gameId']);
+    totalQuote += option['quote'];
+  }
+
+  if (totalQuote < 2.0) {
+    showError(null, 'Erro', 'São aceitas somente apostas com cotação maior que 2,00.');
+    return;
+  }
 
   startSpinner();
 

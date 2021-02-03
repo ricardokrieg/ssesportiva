@@ -471,7 +471,7 @@ async function scrape() {
 exports.scrape = functions
   .runWith(runtimeOpts)
   .pubsub
-  .schedule('every 2 minutes')
+  .schedule('every 4 hours')
   .onRun(async (context) => {
     console.log('Starting the scraper...');
     console.log(`Time now: ${moment().tz('America/Sao_Paulo')}`);
