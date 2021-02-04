@@ -46,6 +46,10 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link" href="regulamento.html"><i class="fas fa-file-alt"></i> Regulamento</a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link" href="acesso.html"><i class="fas fa-key"></i> Login</a>
                 </li>
             </ul>
@@ -103,7 +107,8 @@
 </div>
 
 <div id="spinner" class="text-center m-5">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    <img src="img/logo.png" alt="SS Esportiva" class="img-fluid mb-5">
+    <div class="spinner-border text-primary" role="status" style="width: 5rem; height: 5rem;"></div>
 </div>
 
 <main id="main" style="display: none;">
@@ -166,6 +171,13 @@
       return '';
     }
 
+    let dateDate = date.split(' ')[0];
+    let dateHour = date.split(' ')[1];
+    let dateSeg = dateDate.split('/');
+    if (new Date(dateSeg[1] + '/' + dateSeg[0] + '/' + dateSeg[2] + ' ' + dateHour) <= new Date()) {
+      return '';
+    }
+
     const quoteType = quote['type'];
 
     const optionCasa = findOption(quote, 'Casa');
@@ -185,20 +197,13 @@
       '<div class="row">' +
       '<div class="col-6"><a href="' + url + '">' + text + '</a></div>' +
       '<div class="col-6 row p-0">' +
-      '<span class="col-4 p-0"><button type="button" class="btn btn-primary" data-option-id="' + optionCasa['id'] + '" data-option-quote="' + optionCasa['quote'] + '" data-option-title="' + optionCasa['title'] + '">' + optionCasa['quote'].toFixed(2) + '</button></span>' +
-      '<span class="col-4 p-0"><button type="button" class="btn btn-primary" data-option-id="' + optionEmpate['id'] + '" data-option-quote="' + optionEmpate['quote'] + '" data-option-title="' + optionEmpate['title'] + '">' + optionEmpate['quote'].toFixed(2) + '</button></span>' +
-      '<span class="col-4 p-0"><button type="button" class="btn btn-primary" data-option-id="' + optionFora['id'] + '" data-option-quote="' + optionFora['quote'] + '" data-option-title="' + optionFora['title'] + '">' + optionFora['quote'].toFixed(2) + '</button></span>' +
+      '<span class="col-4 p-0"><button type="button" class="btn btn-primary btn-sm" data-option-id="' + optionCasa['id'] + '" data-option-quote="' + optionCasa['quote'] + '" data-option-title="' + optionCasa['title'] + '">' + optionCasa['quote'].toFixed(2) + '</button></span>' +
+      '<span class="col-4 p-0"><button type="button" class="btn btn-primary btn-sm" data-option-id="' + optionEmpate['id'] + '" data-option-quote="' + optionEmpate['quote'] + '" data-option-title="' + optionEmpate['title'] + '">' + optionEmpate['quote'].toFixed(2) + '</button></span>' +
+      '<span class="col-4 p-0"><button type="button" class="btn btn-primary btn-sm" data-option-id="' + optionFora['id'] + '" data-option-quote="' + optionFora['quote'] + '" data-option-title="' + optionFora['title'] + '">' + optionFora['quote'].toFixed(2) + '</button></span>' +
       '</div>' +
       '</div>' +
       '</td>' +
       '</tr>';
-
-
-      // '<td><a href="' + url + '">' + text + '</a></td>' +
-      // '<td><button type="button" class="btn btn-primary" data-option-id="' + optionCasa['id'] + '" data-option-quote="' + optionCasa['quote'] + '" data-option-title="' + optionCasa['title'] + '">' + optionCasa['quote'].toFixed(2) + '</button>' + '</td>' +
-      // '<td><button type="button" class="btn btn-primary" data-option-id="' + optionEmpate['id'] + '" data-option-quote="' + optionEmpate['quote'] + '" data-option-title="' + optionEmpate['title'] + '">' + optionEmpate['quote'].toFixed(2) + '</button>' + '</td>' +
-      // '<td><button type="button" class="btn btn-primary" data-option-id="' + optionFora['id'] + '" data-option-quote="' + optionFora['quote'] + '" data-option-title="' + optionFora['title'] + '">' + optionFora['quote'].toFixed(2) + '</button>' + '</td>' +
-      // '</tr>';
   }
 
   function fillContent(championship) {

@@ -46,6 +46,10 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link" href="regulamento.html"><i class="fas fa-file-alt"></i> Regulamento</a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link" href="acesso.html"><i class="fas fa-key"></i> Login</a>
                 </li>
             </ul>
@@ -103,7 +107,8 @@
 </div>
 
 <div id="spinner" class="text-center m-5">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    <img src="img/logo.png" alt="SS Esportiva" class="img-fluid mb-5">
+    <div class="spinner-border text-primary" role="status" style="width: 5rem; height: 5rem;"></div>
 </div>
 
 <main id="main" style="display: none;">
@@ -151,7 +156,8 @@
   }
 
   function fillContent(game) {
-    $('#title').html(game['title'] + ' <span class="badge bg-primary fs-6" id="game-date">' + game['date'] + '</span>');
+    const gameHour = game['date'].split(' ')[1];
+    $('#title').html(game['title'] + ' <span class="badge bg-primary fs-6" id="game-date">' + gameHour + '</span>');
 
     let content = '<table class="table table-striped"><thead><tr>' +
       '<th scope="col">Tipo de Aposta</th>' +
@@ -200,10 +206,6 @@
             if ($(this).attr('data-option-selected')) {
               removeOption($(this).attr('data-option-id'));
             } else {
-              addOption({
-                gameId: $(this).attr('data-option-game-id')
-              });
-
               addOption({
                 id: $(this).attr('data-option-id'),
                 quote: parseFloat($(this).attr('data-option-quote')),
