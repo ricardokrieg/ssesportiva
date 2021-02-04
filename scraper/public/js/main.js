@@ -134,11 +134,13 @@ function placeBet() {
 
   if (!betValue || isNaN(betValue) || betValue < 200 || betValue > 100000) {
     showError(null, 'Erro', 'Valor da aposta inválido');
+    $('#place-bet').removeAttr('disabled');
     return;
   }
 
   if (!options || options.length < 1) {
     showError(null, 'Erro', 'O cupom está vazio');
+    $('#place-bet').removeAttr('disabled');
     return;
   }
 
@@ -147,11 +149,13 @@ function placeBet() {
   for (let option of options) {
     if (!option['id'] || !option['gameId'] || !option['quote']) {
       showError(null, 'Erro', 'Aposta inválida');
+      $('#place-bet').removeAttr('disabled');
       return;
     }
 
     if (gameIds.includes(option['gameId'])) {
       showError(null, 'Erro', 'Você não pode fazer mais de uma aposta no mesmo jogo nesse cupom!');
+      $('#place-bet').removeAttr('disabled');
       return;
     }
 
@@ -161,6 +165,7 @@ function placeBet() {
 
   if (totalQuote < 2.0) {
     showError(null, 'Erro', 'São aceitas somente apostas com cotação maior que 2,00.');
+    $('#place-bet').removeAttr('disabled');
     return;
   }
 
@@ -170,17 +175,26 @@ function placeBet() {
     .then(function (result) {
       stopSpinner();
 
-      // TODO show success alert
-      // TODO remove logs
-      console.log('PLACE BET RESULT');
-      console.log(result);
+      $('#bet-modal').removeClass('show').hide();
+      $('.modal-backdrop').remove();
+      $('#place-bet').removeAttr('disabled');
+
+      const id = 'success-modal';
+      const el = $('#' + id);
+
+      $(el).find('.modal-title').text('Aposta inserida com sucesso');
+      let content = '<p>Para validar sua aposta, envie o código abaixo para o seu colaborador:</p>' +
+        '<strong>' + result['data']['code'] + '</strong>';
+      $(el).find('.modal-body').html(content);
+
+      const modal = new bootstrap.Modal(document.getElementById(id), {});
+      modal.show();
 
       clear();
       updateOptions();
       updateBetValue();
       updateExpectedReturn();
       updateCurrentQuote();
-      $('#place-bet').removeAttr('disabled');
     })
     .catch(function(error) {
       $('#place-bet').removeAttr('disabled');
