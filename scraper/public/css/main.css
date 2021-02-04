@@ -7383,8 +7383,8 @@ nav.navbar {
   margin-bottom: 1rem; }
 
 button[data-option-selected] {
-  background-color: #da9f40;
-  border-color: #da9f40; }
+  background-color: #da9f40 !important;
+  border-color: #da9f40 !important; }
 
 .accordion-button.collapsed {
   border-bottom-width: 1px; }

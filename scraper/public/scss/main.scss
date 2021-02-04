@@ -42,8 +42,8 @@ nav.navbar {
 }
 
 button[data-option-selected] {
-  background-color: $warning;
-  border-color: $warning;
+  background-color: $warning !important;
+  border-color: $warning !important;
 }
 
 .accordion-button.collapsed {
