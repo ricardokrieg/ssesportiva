@@ -280,7 +280,9 @@
           });
 
           $('#place-bet').on('click', function() {
+            $('#place-bet').attr('disabled', 'disabled');
             placeBet();
+            $('#place-bet').removeAttr('disabled');
           });
 
           updateOptions();
@@ -288,6 +290,7 @@
           updateExpectedReturn();
           updateCurrentQuote();
         } catch (error) {
+          $('#place-bet').removeAttr('disabled');
           showDefaultError(error);
         }
       })

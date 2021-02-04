@@ -174,8 +174,16 @@ function placeBet() {
       // TODO remove logs
       console.log('PLACE BET RESULT');
       console.log(result);
+
+      clear();
+      updateOptions();
+      updateBetValue();
+      updateExpectedReturn();
+      updateCurrentQuote();
+      $('#place-bet').removeAttr('disabled');
     })
     .catch(function(error) {
+      $('#place-bet').removeAttr('disabled');
       stopSpinner();
       showDefaultError(error);
     });
