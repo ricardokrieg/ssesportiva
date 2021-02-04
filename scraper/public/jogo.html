@@ -211,6 +211,7 @@
           fillContent(data);
 
           $('.bet-value').on('input', function() {
+            $('.bet-value').val($(this).val());
             setBetValue($(this).val());
             updateExpectedReturn();
           });
@@ -233,6 +234,7 @@
 
             updateOptions();
             updateExpectedReturn();
+            updateCurrentQuote();
           });
 
           $('#place-bet').on('click', function() {
