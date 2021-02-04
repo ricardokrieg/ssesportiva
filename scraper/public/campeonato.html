@@ -145,7 +145,7 @@
         <div class="container-fluid">
             <form class="d-flex flex-column">
                 <strong>Buscar jogos por nome ou horário:</strong>
-                <input class="form-control me-2" type="search">
+                <input class="form-control me-2" type="search" id="search">
             </form>
         </div>
 
@@ -295,6 +295,22 @@
           $('#place-bet').on('click', function() {
             $('#place-bet').attr('disabled', 'disabled');
             placeBet();
+          });
+
+          $('#search').on('input', function() {
+            const query = $(this).val().toLowerCase();
+
+            for (let row of $('[data-option-group]')) {
+              if (query.length === 0) {
+                $(row).show();
+              } else {
+                if ($(row).find('a').text().toLowerCase().indexOf(query) > -1) {
+                  $(row).show();
+                } else {
+                  $(row).hide();
+                }
+              }
+            }
           });
 
           updateOptions();
