@@ -21,6 +21,11 @@ $danger: $pomegranate;
 $body-bg: $light;
 $body-color: $dark;
 
+$link-color: $dark;
+$link-decoration: none;
+
+$font-size-base: 0.8rem;
+
 @import '../bootstrap-5.0.0-beta1/scss/bootstrap';
 
 body {
