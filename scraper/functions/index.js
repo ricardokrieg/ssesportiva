@@ -81,6 +81,7 @@ function isValidBet(bet) {
     value,
     confirmedAt,
     code,
+    totalQuote,
     options,
   } = bet;
 
@@ -88,9 +89,9 @@ function isValidBet(bet) {
   if (!value || isNaN(value) || value < MIN_BET_VALUE || value > MAX_BET_VALUE) return false;
   if (confirmedAt && confirmedAt > new Date()) return false; // TODO validate date (this is a Firestore datetime)
   if (!isValidString(code) || code.length !== 6) return false;
+  if (!totalQuote || isNaN(totalQuote) || totalQuote < MIN_QUOTE_VALUE) return false;
   if (!options || options.length < 1) return false;
   if (!_.every(options, isValidBetOption)) return false;
-  // const totalQuote = _.reduce(options, 'quote'); // TODO sum all quotes
   // for (let option of options) { if (!isValidBetOption(option)) return false; }
 
   return true;
@@ -706,9 +707,13 @@ exports.placeBet = functions
         }
       }
 
-      let totalQuote = 0.0;
+      let totalQuote = 1.0;
       for (let option of betData['options']) {
-        totalQuote += option['quote'];
+        totalQuote = totalQuote * (1 / option['quote']);
+      }
+
+      if (totalQuote !== 0) {
+        totalQuote = 1 / totalQuote;
       }
 
       if (totalQuote < MIN_QUOTE_VALUE) {
@@ -716,6 +721,7 @@ exports.placeBet = functions
       }
 
       betData['expectedReturn'] = totalQuote * betValue;
+      betData['totalQuote'] = totalQuote;
 
       const code = String(await generateBetCode());
       betData['code'] = code;

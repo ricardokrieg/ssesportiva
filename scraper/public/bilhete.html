@@ -79,6 +79,23 @@
             </div>
 
             <div class="modal-body"></div>
+
+            <div class="modal-footer">
+                <table class="table table-borderless">
+                    <tr>
+                        <td>Cotação</td>
+                        <td><span class="ticket-quote-text"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Possível Retorno:</td>
+                        <td><span class="ticket-expected-return-text"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Situação:</td>
+                        <td><span class="ticket-status"></span></td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -96,8 +113,14 @@
 
     <div class="container-fluid">
         <form id="search-ticket" class="d-flex flex-column">
-            <strong>Favor inserir o código do bilhete:</strong>
-            <input id="ticket-code" class="form-control me-2" type="search">
+            <div class="mb-3">
+                <label for="ticket-code" class="form-label">Favor inserir o código do bilhete:</label>
+                <input type="search" class="form-control" id="ticket-code">
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
         </form>
     </div>
 </main>

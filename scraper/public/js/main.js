@@ -15,13 +15,17 @@ function getBetValueInCents() {
 }
 
 function getCurrentQuote() {
-  let currentQuote = 0.0;
+  let currentQuote = 1.0;
 
   for (let option of getOptions()) {
-    currentQuote += option['quote'];
+    if (option['quote'] > 0) {
+      currentQuote = currentQuote * (1 / option['quote']);
+    }
   }
 
-  return currentQuote;
+  if (currentQuote === 0) return 0;
+
+  return 1 / currentQuote;
 }
 
 function getExpectedReturnInCents() {
@@ -145,9 +149,9 @@ function placeBet() {
   }
 
   let gameIds = [];
-  let totalQuote = 0.0;
+  let totalQuote = 1.0;
   for (let option of options) {
-    if (!option['id'] || !option['gameId'] || !option['quote']) {
+    if (!option['id'] || !option['gameId'] || !option['quote'] || isNaN(option['quote']) || option['quote'] <= 0) {
       showError(null, 'Erro', 'Aposta inválida');
       $('#place-bet').removeAttr('disabled');
       return;
@@ -160,7 +164,11 @@ function placeBet() {
     }
 
     gameIds.push(option['gameId']);
-    totalQuote += option['quote'];
+    totalQuote = totalQuote * (1 / option['quote']);
+  }
+
+  if (totalQuote !== 0) {
+    totalQuote = 1 / totalQuote;
   }
 
   if (totalQuote < 2.0) {
@@ -214,6 +222,7 @@ function searchBet(code) {
 
       if (data['error']) {
         showError(data['error'], "Erro", data['error']);
+        return;
       }
 
       showTicket(data);
@@ -279,10 +288,17 @@ function showTicket(data) {
   const value = data['value'];
   const expectedReturn = data['expectedReturn'];
   const options = data['options'];
+  const totalQuote = data['totalQuote'];
 
-  if (!value || !expectedReturn || !options || options.length < 1) {
+  if (!value || !expectedReturn || isNaN(expectedReturn) || !totalQuote || isNaN(totalQuote) || !options || options.length < 1) {
+    showError(null, 'Erro', 'Esse bilhete é inválido');
     return;
   }
+
+  $('.ticket-quote-text').text(totalQuote.toFixed(2));
+  $('.ticket-expected-return-text').text(expectedReturn);
+  const statusText = data['confirmedAt'] ? 'Aprovado' : 'Pendente';
+  $('.ticket-status').text(statusText);
 
   let content = '';
 
@@ -295,7 +311,8 @@ function showTicket(data) {
     const title = option['title'];
 
     if (!group || !championship || !game || !quoteType || !quote || !title) {
-      continue;
+      showError(null, 'Erro', 'Esse bilhete é inválido');
+      return;
     }
 
     content += '<div class="card">' +
