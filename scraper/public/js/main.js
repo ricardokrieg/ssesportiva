@@ -229,8 +229,10 @@ function login(email, password) {
 
   firebase.auth().signInWithEmailAndPassword(email, password)
     .then(function (userCredential) {
+      $('#login-button').removeAttr('disabled');
     })
     .catch(function (error) {
+      $('#login-button').removeAttr('disabled');
       showError(error, "Erro", "Email ou Senha incorreto");
     });
 }
