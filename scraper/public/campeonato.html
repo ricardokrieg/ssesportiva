@@ -180,9 +180,9 @@
 
     return '<tr data-option-group="' + group + '" data-option-championship="' + championshipTitle + '" data-option-game="' + title + '" data-option-game-id="' + id + '" data-option-quote-type="' + quoteType + '">' +
       '<td><a href="' + url + '">' + text + '</a></td>' +
-      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionCasa['id'] + '" data-option-quote="' + optionCasa['quote'] + '" data-option-title="' + optionCasa['title'] + '">' + optionCasa['quote'] + '</button>' + '</td>' +
-      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionEmpate['id'] + '" data-option-quote="' + optionEmpate['quote'] + '" data-option-title="' + optionEmpate['title'] + '">' + optionEmpate['quote'] + '</button>' + '</td>' +
-      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionFora['id'] + '" data-option-quote="' + optionFora['quote'] + '" data-option-title="' + optionFora['title'] + '">' + optionFora['quote'] + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionCasa['id'] + '" data-option-quote="' + optionCasa['quote'] + '" data-option-title="' + optionCasa['title'] + '">' + optionCasa['quote'].toFixed(2) + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionEmpate['id'] + '" data-option-quote="' + optionEmpate['quote'] + '" data-option-title="' + optionEmpate['title'] + '">' + optionEmpate['quote'].toFixed(2) + '</button>' + '</td>' +
+      '<td><button type="button" class="btn btn-primary" data-option-id="' + optionFora['id'] + '" data-option-quote="' + optionFora['quote'] + '" data-option-title="' + optionFora['title'] + '">' + optionFora['quote'].toFixed(2) + '</button>' + '</td>' +
       '</tr>';
   }
 

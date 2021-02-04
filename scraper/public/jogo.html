@@ -141,7 +141,7 @@
     for (let option of quote['options']) {
       content += '<tr data-option-group="' + group + '" data-option-championship="' + championshipTitle + '" data-option-game="' + gameTitle + '" data-option-game-id="' + gameId + '" data-option-quote-type="' + type + '">' +
         '<td>' + option['title'] + '</td>' +
-        '<td><button type="button" class="btn btn-primary" data-option-id="' + option['id'] + '" data-option-quote="' + option['quote'] + '" data-option-title="' + option['title'] + '">' + option['quote'] + '</button>' + '</td>' +
+        '<td><button type="button" class="btn btn-primary" data-option-id="' + option['id'] + '" data-option-quote="' + option['quote'] + '" data-option-title="' + option['title'] + '">' + option['quote'].toFixed(2) + '</button>' + '</td>' +
         '</tr>';
     }
 
