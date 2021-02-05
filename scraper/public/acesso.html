@@ -94,6 +94,18 @@
 
     <div id="user-details" style="display: none;">
         <div>Email: <span class="email"></span></div>
+        <div>Limite Total: <span id="member-limit"></span></div>
+        <div>Limite Restante: <span id="member-remaining-limit"></span></div>
+
+        <div>
+            <div>Entradas</div>
+            <div>Saídas</div>
+            <div>Lançamentos</div>
+            <div>Comissões</div>
+            <div>Total</div>
+            toda segunda as 00:00, os valores são resetados
+        </div>
+
         <button id="logout">Sair</button>
     </div>
 </main>
@@ -114,6 +126,8 @@
         $('#login-form').hide();
         $('#user-details .email').text(user.email);
         $('#user-details').show();
+
+        // TODO load member details (call new function)
       } else {
         $('#login-form').show();
         $('#user-details').hide();

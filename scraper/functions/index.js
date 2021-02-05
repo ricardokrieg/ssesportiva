@@ -469,9 +469,7 @@ async function scrapeContent() {
       const title = $(championshipNode).text();
       const url = championshipNode.attribs.href.replace('./', baseUrl + '/');
 
-      // if (title.trim() === 'Campeonato Carioca') {
-      //   championships.push(scrapeChampionship(category, title, url));
-      // }
+      championships.push(scrapeChampionship(category, title, url));
     }
 
     categories.push({
@@ -479,51 +477,6 @@ async function scrapeContent() {
       championships: await Promise.all(championships),
     });
   }
-
-  // for (let category of categories) {
-  //   if (category.championships.length > 0) {
-  //     console.log(category);
-  //
-  //     for (let championship of category.championships) {
-  //       console.log(championship);
-  //       console.log(championship.games[0]);
-  //
-  //       let championshipData = { title: championship['title'], id: championship['id'] };
-  //       championshipData['group'] = category['name'];
-  //       championshipData['games'] = [];
-  //       for (let game of championship['games']) {
-  //         const gameData = { title: game['title'], date: game['date'] };
-  //         const quoteData = game['quotes'][0];
-  //
-  //         if (game['id'] && quoteData) {
-  //           gameData['id'] = game['id'];
-  //           gameData['quote'] = quoteData;
-  //
-  //           game['group'] = championshipData['group'];
-  //           game['championshipTitle'] = championshipData['title'];
-  //           game['championshipId'] = championshipData['id'];
-  //
-  //           game = validateGameData(game);
-  //           if (isValidGame(game)) {
-  //             console.log(`Game ${game['id']} OK`);
-  //           } else {
-  //             console.error(new Error(`invalid game ${game['id']}: ${JSON.stringify(game)}`));
-  //           }
-  //         }
-  //
-  //         championshipData['games'].push(gameData);
-  //       }
-  //
-  //       championshipData = validateChampionshipData(championshipData);
-  //       console.log(championshipData);
-  //       if (isValidChampionship(championshipData)) {
-  //         console.log('Championship OK');
-  //       } else {
-  //         console.error(new Error(`invalid championship ${championship['id']}: ${JSON.stringify(championshipData)}`));
-  //       }
-  //     }
-  //   }
-  // }
 
   debug(util.inspect(categories, false, null, true));
   return categories;
@@ -576,6 +529,7 @@ async function startScrape() {
 
           game = validateGameData(game);
           if (isValidGame(game)) {
+            console.log(`Game ${game['id']} OK`);
             await gamesCol.doc(game['id']).set({ ...game, keep: true });
           } else {
             console.error(new Error(`invalid game ${game['id']}: ${JSON.stringify(game)}`));
@@ -588,6 +542,7 @@ async function startScrape() {
       championshipData = validateChampionshipData(championshipData);
       if (isValidChampionship(championshipData)) {
         await championshipsCol.doc(championship['id']).set({ ...championshipData, keep: true });
+        console.log(`Championship ${championship['id']} OK`);
       } else {
         console.error(new Error(`invalid championship ${championship['id']}: ${JSON.stringify(championshipData)}`));
       }
@@ -597,6 +552,7 @@ async function startScrape() {
   }
 
   if (isValidMenu(menu)) {
+    console.log(`Menu OK`);
     await menuCol.doc('snapshot').set({ data: menu });
   } else {
     console.error(new Error(`invalid menu: ${JSON.stringify(menu)}`));
