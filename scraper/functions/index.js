@@ -332,7 +332,7 @@ async function getMember(context) {
   const docRef = membersCol.doc(userEmail);
   const docSnapshot = await docRef.get();
 
-  return docSnapshot.data();
+  return { ...docSnapshot.data(), uid: user.token.uid };
 }
 
 function randomCode() {
@@ -787,6 +787,10 @@ exports.searchBet = functions
         return { error: "Bilhete não encontrado" };
       }
 
+      if (member && !betData['confirmedAt']) {
+        betData['canConfirm'] = true;
+      }
+
       return betData;
     } catch (e) {
       console.error(e);
@@ -801,5 +805,55 @@ exports.reportError = functions
       console.error(new Error(`Error Reported: ${JSON.stringify(data)}`));
     } catch (e) {
       console.error(e);
+    }
+  });
+
+exports.confirmTicket = functions
+  .https
+  .onCall(async (data, context) => {
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to confirm ticket ${JSON.stringify(data)}`));
+        return { error: "Você não pode aprovar este bilhete!" };
+      }
+
+      const code = data['code'];
+
+      if (!code || code.length === 0) {
+        console.error(new Error(`Member ${member.email} tried to confirm an invalid ticket ${JSON.stringify(data)}`));
+        return { error: "Bilhete não encontrado" };
+      }
+
+      const docRef = betsCol.doc(code);
+      const docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        console.error(new Error(`Member ${member.email} tried to confirm an invalid ticket ${JSON.stringify(data)}`));
+        return { error: "Bilhete não encontrado" };
+      }
+
+      const betData = docSnapshot.data();
+
+      if (betData['confirmedAt']) {
+        console.error(new Error(`Member ${member.email} tried to confirm an already confirmed ticket ${JSON.stringify(data)}`));
+        return { error: "Bilhete já foi aprovado" };
+      }
+
+      const confirmedAt = admin.firestore.Timestamp.now();
+      const confirmedBy = member.email;
+      const confirmedById = member.uid;
+
+      betData['confirmedAt'] = confirmedAt;
+      betData['confirmedBy'] = confirmedBy;
+      betData['confirmedById'] = confirmedById;
+
+      await docSnapshot.ref.update({ confirmedAt, confirmedBy, confirmedById });
+
+      return betData;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
     }
   });

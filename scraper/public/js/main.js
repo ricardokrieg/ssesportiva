@@ -297,8 +297,16 @@ function showTicket(data) {
 
   $('.ticket-quote-text').text(totalQuote.toFixed(2));
   $('.ticket-expected-return-text').text(expectedReturn);
-  const statusText = data['confirmedAt'] ? 'Aprovado' : 'Pendente';
+  const statusText = data['confirmedAt'] ? 'Confirmado' : 'Pendente';
   $('.ticket-status').text(statusText);
+
+  if (data['canConfirm']) {
+    $('#confirm-ticket').show();
+    $('#confirm-ticket-button').attr('data-ticket-code', data['code']);
+  } else {
+    $('#confirm-ticket').hide();
+    $('#confirm-ticket-button').removeAttr('data-ticket-code');
+  }
 
   let content = '';
 

@@ -94,6 +94,11 @@
                         <td>Situação:</td>
                         <td><span class="ticket-status"></span></td>
                     </tr>
+                    <tr>
+                        <div id="confirm-ticket">
+                            <button id="confirm-ticket-button" class="btn btn-success">Confirmar</button>
+                        </div>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -141,6 +146,23 @@
       searchBet(code);
 
       return false;
+    });
+
+    $('#confirm-ticket-button').on('click', function() {
+      const code = $(this).attr('data-ticket-code');
+
+      // TODO block button
+      // TODO add button spinner
+
+      return firebase.functions().httpsCallable('confirmTicket')({ code: code })
+        .then(function (result) {
+          console.log(result);
+
+          // TODO reload whole modal?
+        })
+        .catch(function(error) {
+          showDefaultError(error);
+        });
     });
   });
 </script>
