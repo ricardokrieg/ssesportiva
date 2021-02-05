@@ -177,15 +177,15 @@ function placeBet() {
     return;
   }
 
+  $('#bet-modal').removeClass('show').hide();
+  $('.modal-backdrop').remove();
+  $('#place-bet').removeAttr('disabled');
+
   startSpinner();
 
   firebase.functions().httpsCallable('placeBet')(params)
     .then(function (result) {
       stopSpinner();
-
-      $('#bet-modal').removeClass('show').hide();
-      $('.modal-backdrop').remove();
-      $('#place-bet').removeAttr('disabled');
 
       const id = 'success-modal';
       const el = $('#' + id);
