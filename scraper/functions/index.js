@@ -43,6 +43,12 @@ const baseUrl = `https://thebets.bet/simulador`;
 const MIN_BET_VALUE = 200; // R$2,00
 const MAX_BET_VALUE = 100000; // R$1.000,00
 const MIN_QUOTE_VALUE = 2;
+const MIN_MINUTES_BEFORE_RESULT = 120;
+const DEFAULT_MAX_VALUE = 1000;
+
+function dateIsPast(date) {
+  return moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'));
+}
 
 function isValidString(value) {
   return value && value.length > 0 && (typeof value === 'string');
@@ -67,7 +73,7 @@ function isValidBetOption(option) {
   if (!isValidString(championshipId)) return false;
   if (!isValidString(game)) return false;
   if (!isValidString(gameId)) return false;
-  if (!isValidString(gameDate) || moment.tz(gameDate, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'))) return false;
+  if (!isValidString(gameDate) || dateIsPast(gameDate)) return false;
   if (!isValidString(quoteType)) return false;
   if (!quote || isNaN(quote) || quote <= 0) return false;
   if (!isValidString(title)) return false;
@@ -78,6 +84,7 @@ function isValidBetOption(option) {
 
 function isValidBet(bet) {
   const {
+    createdAt,
     expectedReturn,
     value,
     confirmedAt,
@@ -86,6 +93,7 @@ function isValidBet(bet) {
     options,
   } = bet;
 
+  if (!createdAt) return false;
   if (!expectedReturn || isNaN(expectedReturn) || expectedReturn <= 0) return false;
   if (!value || isNaN(value) || value < MIN_BET_VALUE || value > MAX_BET_VALUE) return false;
   if (confirmedAt && confirmedAt > new Date()) return false; // TODO validate date (this is a Firestore datetime)
@@ -167,7 +175,7 @@ function isValidGame(game) {
     console.error(new Error(`invalid game.championshipId: ${championshipId}`));
     return false;
   }
-  if (!isValidString(date) || moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'))) {
+  if (!isValidString(date) || dateIsPast(date)) {
     console.error(new Error(`invalid game.date: ${date}`));
     console.error(new Error(`Game Date: ${moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo')}`));
     console.error(new Error(`Current Date: ${moment().tz('America/Sao_Paulo')}`));
@@ -210,7 +218,7 @@ function isValidChampionshipGame(game) {
     quote,
   } = game;
 
-  if (!isValidString(date) || moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'))) {
+  if (!isValidString(date) || dateIsPast(date)) {
     console.error(new Error(`invalid championship.game.date: ${date}`));
     return false;
   }
@@ -332,7 +340,10 @@ async function getMember(context) {
   const docRef = membersCol.doc(userEmail);
   const docSnapshot = await docRef.get();
 
-  return { ...docSnapshot.data(), uid: user.token.uid };
+  const data = docSnapshot.data();
+  const maxValue = data.maxValue || DEFAULT_MAX_VALUE;
+
+  return { ...data, maxValue, uid: user.token.uid };
 }
 
 function randomCode() {
@@ -749,6 +760,7 @@ exports.placeBet = functions
 
       const code = String(await generateBetCode());
       betData['code'] = code;
+      betData['createdAt'] = admin.firestore.Timestamp.now();
       if (isValidBet(betData)) {
         await betsCol.doc(code).set(betData);
 
@@ -783,12 +795,54 @@ exports.searchBet = functions
       const betData = docSnapshot.data();
       const member = await getMember(context);
 
-      if (!member && !betData['confirmedAt']) {
-        return { error: "Bilhete não encontrado" };
-      }
+      if (member) {
+        let gameStarted = false;
+        for (let option of betData['options']) {
+          if (dateIsPast(option['gameDate'])) {
+            gameStarted = true;
+            break;
+          }
+        }
 
-      if (member && !betData['confirmedAt']) {
-        betData['canConfirm'] = true;
+        let gameNotFinished = false;
+        for (let option of betData['options']) {
+          const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo');
+          const dateDiffMinutes = (dateDiff / 1000) / 60;
+
+          if (dateDiffMinutes < MIN_MINUTES_BEFORE_RESULT) {
+            gameNotFinished = true;
+            break;
+          }
+        }
+
+        if (betData['confirmedAt']) {
+          if (betData['confirmedById'] === member.uid || betData['confirmedBy'] === member.email) {
+            // TODO cancel ticket won't be done yet
+            // if (gameStarted) {
+            //   betData['statusWarningCancel'] = 'Não pode ser cancelado pois uma partida já iniciou';
+            // } else {
+            //   betData['canCancel'] = true;
+            // }
+          }
+
+          if (!betData['result'] && !gameNotFinished) {
+            betData['canSetResult'] = true;
+          }
+        } else {
+          if (gameStarted) {
+            betData['statusWarningConfirm'] = 'Não pode ser confirmado pois uma partida já iniciou';
+          } else {
+            if ((betData['expectedReturn'] / 100) > member.maxValue) {
+              betData['statusWarningConfirm'] = 'Prêmio do bilhete ultrapassa o limite';
+            } else {
+              betData['canConfirm'] = true;
+            }
+          }
+        }
+      } else {
+        if (!betData['confirmedAt']) {
+          return { error: "Bilhete não encontrado" };
+        }
       }
 
       return betData;
@@ -816,7 +870,7 @@ exports.confirmTicket = functions
 
       if (!member) {
         console.error(new Error(`Non-Member tried to confirm ticket ${JSON.stringify(data)}`));
-        return { error: "Você não pode aprovar este bilhete!" };
+        return { error: "Você não pode confirmar este bilhete!" };
       }
 
       const code = data['code'];
@@ -838,7 +892,19 @@ exports.confirmTicket = functions
 
       if (betData['confirmedAt']) {
         console.error(new Error(`Member ${member.email} tried to confirm an already confirmed ticket ${JSON.stringify(data)}`));
-        return { error: "Bilhete já foi aprovado" };
+        return { error: "Bilhete já foi confirmado" };
+      }
+
+      if ((betData['expectedReturn'] / 100) > member.maxValue) {
+        console.error(new Error(`Member ${member.email} tried to confirm a ticket with invalid expectedReturn ${JSON.stringify(data)}`));
+        return { error: "Prêmio do bilhete ultrapassa o limite" };
+      }
+
+      for (let option of betData['options']) {
+        if (dateIsPast(option['gameDate'])) {
+          console.error(new Error(`Member ${member.email} tried to confirm a ticket with past date ${JSON.stringify(data)}`));
+          return { error: "Bilhete não pode ser confirmado" };
+        }
       }
 
       const confirmedAt = admin.firestore.Timestamp.now();
@@ -850,6 +916,132 @@ exports.confirmTicket = functions
       betData['confirmedById'] = confirmedById;
 
       await docSnapshot.ref.update({ confirmedAt, confirmedBy, confirmedById });
+
+      return betData;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+// TODO cancel ticket won't be done yet
+// exports.cancelTicket = functions
+//   .https
+//   .onCall(async (data, context) => {
+//     try {
+//       const member = await getMember(context);
+//
+//       if (!member) {
+//         console.error(new Error(`Non-Member tried to cancel ticket ${JSON.stringify(data)}`));
+//         return { error: "Você não pode cancelar este bilhete!" };
+//       }
+//
+//       const code = data['code'];
+//
+//       if (!code || code.length === 0) {
+//         console.error(new Error(`Member ${member.email} tried to cancel an invalid ticket ${JSON.stringify(data)}`));
+//         return { error: "Bilhete não encontrado" };
+//       }
+//
+//       const docRef = betsCol.doc(code);
+//       const docSnapshot = await docRef.get();
+//
+//       if (!docSnapshot.exists) {
+//         console.error(new Error(`Member ${member.email} tried to cancel an invalid ticket ${JSON.stringify(data)}`));
+//         return { error: "Bilhete não encontrado" };
+//       }
+//
+//       const betData = docSnapshot.data();
+//
+//       if (!betData['confirmedAt']) {
+//         console.error(new Error(`Member ${member.email} tried to cancel a non-confirmed ticket ${JSON.stringify(data)}`));
+//         return { error: "Bilhete não está confirmado" };
+//       }
+//
+//       for (let option of betData['options']) {
+//         if (dateIsPast(option['gameDate'])) {
+//           console.error(new Error(`Member ${member.email} tried to cancel a ticket with past date ${JSON.stringify(data)}`));
+//           return { error: "Bilhete não pode ser confirmado" };
+//         }
+//       }
+//
+//       const canceledAt = admin.firestore.Timestamp.now();
+//       const canceledBy = member.email;
+//       const canceledById = member.uid;
+//
+//       betData['canceledAt'] = canceledAt;
+//       betData['canceledBy'] = canceledBy;
+//       betData['canceledById'] = canceledById;
+//
+//       await docSnapshot.ref.update({ confirmedAt, confirmedBy, confirmedById });
+//
+//       return betData;
+//     } catch (e) {
+//       console.error(e);
+//       return { error: "Ocorreu um erro!" };
+//     }
+//   });
+
+exports.setTicketResult = functions
+  .https
+  .onCall(async (data, context) => {
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to set ticket result ${JSON.stringify(data)}`));
+        return { error: "Você não pode definir o resultado desse bilhete!" };
+      }
+
+      const result = data['result'];
+
+      if (!result || result.length === 0 || ['win', 'loss'].indexOf(result) === -1) {
+        console.error(new Error(`Member ${member.email} tried to set an invalid result ${JSON.stringify(data)}`));
+        return { error: "Este resultado não é válido" };
+      }
+
+      const code = data['code'];
+
+      if (!code || code.length === 0) {
+        console.error(new Error(`Member ${member.email} tried to set result for an invalid ticket ${JSON.stringify(data)}`));
+        return { error: "Bilhete não encontrado" };
+      }
+
+      const docRef = betsCol.doc(code);
+      const docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        console.error(new Error(`Member ${member.email} tried to set result for an invalid ticket ${JSON.stringify(data)}`));
+        return { error: "Bilhete não encontrado" };
+      }
+
+      const betData = docSnapshot.data();
+
+      if (!betData['confirmedAt']) {
+        console.error(new Error(`Member ${member.email} tried to set result for a non-confirmed ticket ${JSON.stringify(data)}`));
+        return { error: "Bilhete não foi confirmado" };
+      }
+
+      for (let option of betData['options']) {
+        const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo');
+        const dateDiffMinutes = (dateDiff / 1000) / 60;
+
+        if (dateDiffMinutes < MIN_MINUTES_BEFORE_RESULT) {
+          console.error(new Error(`Member ${member.email} tried to set result for a ticket before minimum time ${JSON.stringify(data)}`));
+          return { error: "Você ainda não pode definir o resultado desse bilhete." };
+        }
+      }
+
+      const resultSetAt = admin.firestore.Timestamp.now();
+      const resultSetBy = member.email;
+      const resultSetById = member.uid;
+
+      betData['result'] = result;
+      betData['resultSetAt'] = resultSetAt;
+      betData['resultSetBy'] = resultSetBy;
+      betData['resultSetById'] = resultSetById;
+
+      await docSnapshot.ref.update({ result, resultSetAt, resultSetBy, resultSetById });
 
       return betData;
     } catch (e) {

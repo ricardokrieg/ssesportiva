@@ -284,7 +284,7 @@ function showDefaultError(error) {
   showError(error, "Erro", "Aconteceu um erro");
 }
 
-function showTicket(data) {
+function showTicket(data, skipOpenModal) {
   const value = data['value'];
   const expectedReturn = data['expectedReturn'];
   const options = data['options'];
@@ -295,17 +295,54 @@ function showTicket(data) {
     return;
   }
 
+  $('.ticket-bet-value-text').text(format(value));
   $('.ticket-quote-text').text(totalQuote.toFixed(2));
-  $('.ticket-expected-return-text').text(expectedReturn);
+  $('.ticket-expected-return-text').text(format(expectedReturn));
+
   const statusText = data['confirmedAt'] ? 'Confirmado' : 'Pendente';
   $('.ticket-status').text(statusText);
 
-  if (data['canConfirm']) {
+  let resultText = '';
+  if (data['result'] === 'win') {
+    resultText = 'Acertou';
+  } else if (data['result'] === 'loss') {
+    resultText = 'Errou';
+  }
+  $('.ticket-result-text').text(resultText);
+
+  if (data['statusWarningConfirm']) {
+    $('#cancel-ticket').hide();
+
+    $('#confirm-ticket-button').attr('disabled', 'disabled').removeAttr('data-ticket-code');
+    $('#confirm-ticket-warning').text(data['statusWarningConfirm']).show();
     $('#confirm-ticket').show();
-    $('#confirm-ticket-button').attr('data-ticket-code', data['code']);
+  } else if (data['canConfirm']) {
+    $('#cancel-ticket').hide();
+
+    $('#confirm-ticket-button').removeAttr('disabled').attr('data-ticket-code', data['code']);
+    $('#confirm-ticket-warning').hide();
+    $('#confirm-ticket').show();
+  } else if (data['statusWarningCancel']) {
+    $('#confirm-ticket').hide();
+
+    $('#cancel-ticket-button').attr('disabled', 'disabled').removeAttr('data-ticket-code');
+    $('#cancel-ticket-warning').text(data['statusWarningCancel']).show();
+    $('#cancel-ticket').show();
+  } else if (data['canCancel']) {
+    $('#confirm-ticket').hide();
+
+    $('#cancel-ticket-button').removeAttr('disabled').attr('data-ticket-code', data['code']);
+    $('#cancel-ticket-warning').hide();
+    $('#cancel-ticket').show();
   } else {
     $('#confirm-ticket').hide();
-    $('#confirm-ticket-button').removeAttr('data-ticket-code');
+    $('#cancel-ticket').hide();
+  }
+
+  if (data['canSetResult']) {
+    $('#result-ticket').show();
+    $('#result-win-ticket-button').removeAttr('disabled').attr('data-ticket-code', data['code']);
+    $('#result-loss-ticket-button').removeAttr('disabled').attr('data-ticket-code', data['code']);
   }
 
   let content = '';
@@ -335,8 +372,11 @@ function showTicket(data) {
   }
 
   $('#ticket-modal .modal-body').html(content);
-  const modal = new bootstrap.Modal(document.getElementById('ticket-modal'), {});
-  modal.show();
+
+  if (!skipOpenModal) {
+    const modal = new bootstrap.Modal(document.getElementById('ticket-modal'), {});
+    modal.show();
+  }
 }
 
 function prepareBetModal() {

@@ -57,19 +57,6 @@
     </div>
 </nav>
 
-<div class="modal fade" id="alert-modal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body bg-danger text-white"></div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="ticket-modal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -83,6 +70,10 @@
             <div class="modal-footer">
                 <table class="table table-borderless">
                     <tr>
+                        <td>Valor da Aposta</td>
+                        <td><span class="ticket-bet-value-text"></span></td>
+                    </tr>
+                    <tr>
                         <td>Cotação</td>
                         <td><span class="ticket-quote-text"></span></td>
                     </tr>
@@ -95,12 +86,52 @@
                         <td><span class="ticket-status"></span></td>
                     </tr>
                     <tr>
-                        <div id="confirm-ticket">
-                            <button id="confirm-ticket-button" class="btn btn-success">Confirmar</button>
+                        <td>Resultado:</td>
+                        <td><span class="ticket-result-text"></span></td>
+                    </tr>
+                    <tr>
+                        <div id="confirm-ticket" style="display: none">
+                            <button id="confirm-ticket-button" class="btn btn-success">
+                                <span class="spinner-border spinner-border-sm" style="display: none"></span>
+                                Confirmar
+                            </button>
+                            <span id="confirm-ticket-warning" class="danger"></span>
+                        </div>
+
+                        <div id="cancel-ticket" style="display: none">
+                            <button id="cancel-ticket-button" class="btn btn-danger">
+                                <span class="spinner-border spinner-border-sm" style="display: none"></span>
+                                Cancelar
+                            </button>
+                            <span id="cancel-ticket-warning" class="danger"></span>
+                        </div>
+
+                        <div id="result-ticket" style="display: none">
+                            <button id="result-win-ticket-button" class="btn btn-success">
+                                <span class="spinner-border spinner-border-sm" style="display: none"></span>
+                                Acertou
+                            </button>
+                            <button id="result-loss-ticket-button" class="btn btn-danger">
+                                <span class="spinner-border spinner-border-sm" style="display: none"></span>
+                                Errou
+                            </button>
                         </div>
                     </tr>
                 </table>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="alert-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body bg-danger text-white"></div>
         </div>
     </div>
 </div>
@@ -151,16 +182,93 @@
     $('#confirm-ticket-button').on('click', function() {
       const code = $(this).attr('data-ticket-code');
 
-      // TODO block button
-      // TODO add button spinner
+      $(this).attr('disabled', 'disabled');
+      $(this).find('span').show();
 
       return firebase.functions().httpsCallable('confirmTicket')({ code: code })
         .then(function (result) {
-          console.log(result);
+          $('#confirm-ticket-button').hide();
 
-          // TODO reload whole modal?
+          if (result['data']['error']) {
+            showError(null, 'Erro', result['data']['error']);
+          } else {
+            showTicket(result['data'], true);
+          }
         })
         .catch(function(error) {
+          $('#confirm-ticket-button').hide();
+          showDefaultError(error);
+        });
+    });
+
+    $('#cancel-ticket-button').on('click', function() {
+      const code = $(this).attr('data-ticket-code');
+
+      $(this).attr('disabled', 'disabled');
+      $(this).find('span').show();
+
+      return firebase.functions().httpsCallable('cancelTicket')({ code: code })
+        .then(function (result) {
+          $('#cancel-ticket-button').hide();
+
+          if (result['data']['error']) {
+            showError(null, 'Erro', result['data']['error']);
+          } else {
+            showTicket(result['data'], true);
+          }
+        })
+        .catch(function(error) {
+          $('#cancel-ticket-button').hide();
+          showDefaultError(error);
+        });
+    });
+
+    $('#result-win-ticket-button').on('click', function() {
+      const code = $(this).attr('data-ticket-code');
+
+      $(this).attr('disabled', 'disabled');
+      $(this).find('span').show();
+      $('#result-loss-ticket-button').attr('disabled', 'disabled');
+
+      return firebase.functions().httpsCallable('setTicketResult')({ code: code, result: 'win' })
+        .then(function (result) {
+          $('#result-win-ticket-button').hide();
+          $('#result-loss-ticket-button').hide();
+
+          if (result['data']['error']) {
+            showError(null, 'Erro', result['data']['error']);
+          } else {
+            showTicket(result['data'], true);
+          }
+        })
+        .catch(function(error) {
+          $('#result-win-ticket-button').hide();
+          $('#result-loss-ticket-button').hide();
+          showDefaultError(error);
+        });
+    });
+
+    $('#result-loss-ticket-button').on('click', function() {
+      const code = $(this).attr('data-ticket-code');
+
+      $(this).attr('disabled', 'disabled');
+      $(this).find('span').show();
+      $('#result-win-ticket-button').attr('disabled', 'disabled');
+
+      return firebase.functions().httpsCallable('setTicketResult')({ code: code, result: 'loss' })
+        .then(function (result) {
+          $('#result-loss-ticket-button').hide();
+          $('#result-win-ticket-button').hide();
+
+          if (result['data']['error']) {
+            showError(null, 'Erro', result['data']['error']);
+          } else {
+            showTicket(result['data'], true);
+          }
+        })
+        .catch(function(error) {
+          $('#result-loss-ticket-button').hide();
+          $('#result-win-ticket-button').hide();
           showDefaultError(error);
         });
     });
