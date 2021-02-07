@@ -371,6 +371,7 @@ function showTicket(data, skipOpenModal) {
       '</div>';
   }
 
+  $('#ticket-modal #modal-title-ticket-code').text(data['code']);
   $('#ticket-modal .modal-body').html(content);
 
   if (!skipOpenModal) {

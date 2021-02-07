@@ -18,12 +18,10 @@
     <link rel="apple-touch-icon" href="img/favicons/apple-touch-icon.png" sizes="180x180">
     <link rel="icon" href="img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
-    <link rel="manifest" href="img/favicons/manifest.json">
-    <link rel="mask-icon" href="img/favicons/safari-pinned-tab.svg" color="#7952b3">
     <link rel="icon" href="img/favicons/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <meta name="theme-color" content="#7952b3">
+    <meta name="theme-color" content="#20A7DB">
 </head>
 <body>
 
@@ -94,17 +92,29 @@
 
     <div id="user-details" style="display: none;">
         <div>Email: <span class="email"></span></div>
-        <div>Limite Total: <span id="member-limit"></span></div>
-        <div>Limite Restante: <span id="member-remaining-limit"></span></div>
 
-        <div>
-            <div>Entradas</div>
-            <div>Saídas</div>
-            <div>Lançamentos</div>
-            <div>Comissões</div>
-            <div>Total</div>
-            toda segunda as 00:00, os valores são resetados
-        </div>
+        <table class="table table-borderless">
+            <tr>
+                <td>Entradas</td>
+                <td><span class="member-in-text"></span></td>
+            </tr>
+            <tr>
+                <td>Saídas:</td>
+                <td><span class="member-out-text"></span></td>
+            </tr>
+            <tr>
+                <td>Comissões:</td>
+                <td><span class="member-commission-text"></span></td>
+            </tr>
+            <tr>
+                <td>Total:</td>
+                <td><span class="member-total-text"></span></td>
+            </tr>
+            <tr>
+                <td>Situação:</td>
+                <td><span class="member-status"></span></td>
+            </tr>
+        </table>
 
         <button id="logout">Sair</button>
     </div>
@@ -127,7 +137,29 @@
         $('#user-details .email').text(user.email);
         $('#user-details').show();
 
-        // TODO load member details (call new function)
+        firebase.functions().httpsCallable('getMemberDetails')()
+          .then(function (result) {
+            if (result['data']['error']) {
+              showError(null, 'Erro', result['data']['error']);
+            } else {
+              const data = result['data'];
+
+              $('.member-in-text').text(format(data['in']));
+              $('.member-out-text').text(format(data['out']));
+              $('.member-commission-text').text(format(data['commission']));
+              $('.member-total-text').text(format(data['total']));
+              $('.member-status').text(data['status']);
+
+              if (data['status'] === 'OK') {
+                $('.member-status').removeClass('text-warning').addClass('text-success');
+              } else {
+                $('.member-status').removeClass('text-success').addClass('text-warning');
+              }
+            }
+          })
+          .catch(function(error) {
+            showDefaultError(error);
+          });
       } else {
         $('#login-form').show();
         $('#user-details').hide();

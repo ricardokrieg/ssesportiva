@@ -340,6 +340,10 @@ async function getMember(context) {
   const docRef = membersCol.doc(userEmail);
   const docSnapshot = await docRef.get();
 
+  if (!docSnapshot.exists) {
+    return null;
+  }
+
   const data = docSnapshot.data();
   const maxValue = data.maxValue || DEFAULT_MAX_VALUE;
 
@@ -469,24 +473,44 @@ async function scrapeContent() {
   const categories = [];
 
   const countries = $('#drop2 #AccordionPaises .accordionHeader', html);
+  let dayGames = null;
   for (let country of countries) {
-    if (country.attribs.id === `0_header`) continue;
+    if (country.attribs.id === `0_header`) {
+      dayGames = {
+        category: _.trim($(country).text()),
+        championships: [],
+      };
+
+      const championshipsNode = $('a', country.next);
+      for (let championshipNode of championshipsNode) {
+        const title = _.trim($(championshipNode).text());
+        const url = championshipNode.attribs.href.replace('./', baseUrl + '/');
+
+        dayGames['championships'].push({ title, url });
+      }
+
+      continue;
+    }
 
     const category = _.trim($(country).text());
     const championships = [];
 
     const championshipsNode = $('a', country.next);
     for (let championshipNode of championshipsNode) {
-      const title = $(championshipNode).text();
+      const title = _.trim($(championshipNode).text());
       const url = championshipNode.attribs.href.replace('./', baseUrl + '/');
 
-      championships.push(scrapeChampionship(category, title, url));
+      // championships.push(scrapeChampionship(category, title, url));
     }
 
     categories.push({
       name: category,
       championships: await Promise.all(championships),
     });
+  }
+
+  if (dayGames) {
+    console.log(dayGames);
   }
 
   debug(util.inspect(categories, false, null, true));
@@ -499,6 +523,7 @@ async function startScrape() {
 
   const groups = await scrapeContent();
 
+  return;
   // mark each championship to be removed
   let querySnapshot = await championshipsCol.get();
   for (let docSnapshot of querySnapshot.docs) {
@@ -795,7 +820,7 @@ exports.searchBet = functions
       const betData = docSnapshot.data();
       const member = await getMember(context);
 
-      if (member) {
+      if (member && !member.blocked) {
         let gameStarted = false;
         for (let option of betData['options']) {
           if (dateIsPast(option['gameDate'])) {
@@ -870,6 +895,11 @@ exports.confirmTicket = functions
 
       if (!member) {
         console.error(new Error(`Non-Member tried to confirm ticket ${JSON.stringify(data)}`));
+        return { error: "Você não pode confirmar este bilhete!" };
+      }
+
+      if (member.blocked) {
+        console.error(new Error(`BLocked Member ${member.email} tried to confirm ticket ${JSON.stringify(data)}`));
         return { error: "Você não pode confirmar este bilhete!" };
       }
 
@@ -993,6 +1023,11 @@ exports.setTicketResult = functions
         return { error: "Você não pode definir o resultado desse bilhete!" };
       }
 
+      if (member.blocked) {
+        console.error(new Error(`BLocked Member ${member.email} tried to set ticket result ${JSON.stringify(data)}`));
+        return { error: "Você não pode definir o resultado desse bilhete!" };
+      }
+
       const result = data['result'];
 
       if (!result || result.length === 0 || ['win', 'loss'].indexOf(result) === -1) {
@@ -1044,6 +1079,44 @@ exports.setTicketResult = functions
       await docSnapshot.ref.update({ result, resultSetAt, resultSetBy, resultSetById });
 
       return betData;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getMemberDetails = functions
+  .https
+  .onCall(async (data, context) => {
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to get details ${JSON.stringify(data)}`));
+        return { error: "Você não está logado!" };
+      }
+
+      const docRef = betsCol.where('confirmedById', '==', member.uid);
+      const querySnapshot = await docRef.get();
+
+      let memberIn = 0;
+      let memberOut = 0;
+
+      for (let docSnapshot of querySnapshot.docs) {
+        const data = await docSnapshot.data();
+        memberIn += data['value'];
+      }
+
+      const memberCommission = memberIn * 0.2;
+      const total = memberIn - memberOut - memberCommission;
+
+      return {
+        in: memberIn,
+        out: memberOut,
+        commission: memberCommission,
+        total,
+        status: member.blocked ? 'Aguardando ativação' : 'OK',
+      };
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };
