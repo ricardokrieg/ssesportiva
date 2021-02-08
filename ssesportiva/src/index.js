@@ -1,17 +1,53 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import { render } from 'react-dom';
+import { Provider } from 'react-redux';
+import { createStore, applyMiddleware } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+import { BrowserRouter } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { isLoaded } from 'react-redux-firebase';
+import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
+import { isNull } from 'lodash';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+import App from './App';
+import reducers from './reducers';
+import rootSaga from './sagas';
+import firebase from './services/firebase';
+import { getMemberDetails } from './actions/auth';
+
+const sagaMiddleware = createSagaMiddleware();
+const store = createStore(reducers, {}, applyMiddleware(sagaMiddleware));
+
+const rrfProps = {
+  firebase,
+  config: {},
+  dispatch: store.dispatch,
+};
+
+sagaMiddleware.run(rootSaga);
+
+firebase.auth().onAuthStateChanged((user) => {
+  if (!isNull(user)) {
+    store.dispatch(getMemberDetails());
+  }
+});
+
+// TODO add loader
+function AuthIsLoaded({ children }) {
+  const auth = useSelector((state) => state.firebase.auth);
+  if (!isLoaded(auth)) return <div>splash screen...</div>;
+  return children;
+}
+
+render(
+  <Provider store={store}>
+    <ReactReduxFirebaseProvider {...rrfProps}>
+      <BrowserRouter>
+        <AuthIsLoaded>
+          <App />
+        </AuthIsLoaded>
+      </BrowserRouter>
+    </ReactReduxFirebaseProvider>
+  </Provider>,
   document.getElementById('root')
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
