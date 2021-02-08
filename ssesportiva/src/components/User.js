@@ -9,7 +9,7 @@ const User = ({ auth, user, error }) => {
   return (
     <div>
       <div>{auth.email}</div>
-      <div>{user && user.name}</div>
+      <div>{user && user.status}</div>
     </div>
   );
 };
