@@ -10,9 +10,6 @@ import {
 export function* getChampionship({ payload: { id } }) {
   yield put({ type: GET_CHAMPIONSHIP_LOADING });
 
-  console.log('XXXXX');
-  console.log(id);
-
   try {
     const response = yield firebase
       .functions()

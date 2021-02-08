@@ -6,11 +6,14 @@ import { watchGetGroups } from './groups';
 
 import { watchGetChampionship } from './championship';
 
+import { watchGetGame } from './game';
+
 export default function* rootSaga() {
   yield all([
     watchSignin(),
     watchGetMemberDetails(),
     watchGetGroups(),
     watchGetChampionship(),
+    watchGetGame(),
   ]);
 }

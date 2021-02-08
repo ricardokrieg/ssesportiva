@@ -10,8 +10,6 @@ class ChampionshipContainer extends React.Component {
   componentDidMount() {
     const { id } = this.props.match.params;
 
-    console.log('Here', id);
-
     this.props.getChampionship(id);
   }
 

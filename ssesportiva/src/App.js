@@ -9,6 +9,7 @@ import Login from './containers/Login';
 import UserContainer from './containers/UserContainer';
 import GroupListContainer from './containers/GroupListContainer';
 import ChampionshipContainer from './containers/ChampionshipContainer';
+import GameContainer from './containers/GameContainer';
 
 class App extends Component {
   render() {
@@ -27,6 +28,7 @@ class App extends Component {
                 path="/campeonato/:id"
                 component={ChampionshipContainer}
               />
+              <Route exact path="/jogo/:id" component={GameContainer} />
             </Col>
           </Row>
         </Container>
