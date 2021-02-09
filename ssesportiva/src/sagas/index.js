@@ -8,6 +8,8 @@ import { watchGetChampionship } from './championship';
 
 import { watchGetGame } from './game';
 
+import { watchAddOption, watchRemoveOption } from './bet';
+
 export default function* rootSaga() {
   yield all([
     watchSignin(),
@@ -15,5 +17,7 @@ export default function* rootSaga() {
     watchGetGroups(),
     watchGetChampionship(),
     watchGetGame(),
+    watchAddOption(),
+    watchRemoveOption(),
   ]);
 }

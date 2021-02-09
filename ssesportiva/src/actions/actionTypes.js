@@ -24,3 +24,11 @@ export const GET_GAME = 'GET_GAME';
 export const GET_GAME_SUCCESS = 'GET_GAME_SUCCESS';
 export const GET_GAME_ERROR = 'GET_GAME_ERROR';
 export const GET_GAME_LOADING = 'GET_GAME_LOADING';
+
+export const ADD_OPTION = 'ADD_OPTION';
+export const ADD_OPTION_SUCCESS = 'ADD_OPTION_SUCCESS';
+export const REMOVE_OPTION = 'REMOVE_OPTION';
+export const REMOVE_OPTION_SUCCESS = 'REMOVE_OPTION_SUCCESS';
+
+export const OPEN_TOAST = 'OPEN_TOAST';
+export const CLOSE_TOAST = 'CLOSE_TOAST';
