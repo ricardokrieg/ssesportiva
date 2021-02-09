@@ -2,12 +2,17 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { Button } from 'react-bootstrap';
-import { removeOption, setBetValue } from '../actions/bet';
+import { removeOption, setBetValue, placeBet } from '../actions/bet';
 import NumberFormat from 'react-number-format';
+import ToastContainer from '../components/ToastContainer';
 
 class BetSummaryContainer extends React.Component {
   handleRemoveOptionClick(option) {
     this.props.removeOption(option);
+  }
+
+  placeBet() {
+    this.props.placeBet();
   }
 
   render() {
@@ -48,6 +53,8 @@ class BetSummaryContainer extends React.Component {
           fixedDecimalScale
           decimalScale={2}
         />
+
+        <Button onClick={() => this.placeBet()}>Enviar</Button>
       </div>
     );
   }
@@ -65,6 +72,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     removeOption: (option) => dispatch(removeOption(option)),
     setBetValue: (value) => dispatch(setBetValue(value)),
+    placeBet: () => dispatch(placeBet()),
   };
 };
 

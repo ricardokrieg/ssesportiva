@@ -4,6 +4,9 @@ import {
   ADD_OPTION_SUCCESS,
   REMOVE_OPTION_SUCCESS,
   SET_BET_VALUE,
+  PLACE_BET_LOADING,
+  PLACE_BET_SUCCESS,
+  PLACE_BET_ERROR,
 } from '../actions/actionTypes';
 
 const initialState = {
@@ -11,6 +14,8 @@ const initialState = {
   quote: 1.0,
   expectedReturn: 0.0,
   options: [],
+  error: null,
+  loading: true,
 };
 
 const calculateQuote = (options) => {
@@ -48,8 +53,34 @@ export default function betReducer(state = initialState, action) {
 
       return {
         ...state,
-        value,
+        value: parseFloat(value),
         expectedReturn: state.quote * value,
+      };
+    case PLACE_BET_LOADING:
+      return {
+        ...state,
+        loading: true,
+      };
+    case PLACE_BET_SUCCESS:
+      const {
+        payload: { code },
+      } = action;
+
+      return {
+        ...state,
+        loading: false,
+        error: null,
+        code,
+      };
+    case PLACE_BET_ERROR:
+      const {
+        payload: { error },
+      } = action;
+
+      return {
+        ...state,
+        loading: false,
+        error,
       };
     default:
       return state;

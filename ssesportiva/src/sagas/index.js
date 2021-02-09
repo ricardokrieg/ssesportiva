@@ -8,7 +8,7 @@ import { watchGetChampionship } from './championship';
 
 import { watchGetGame } from './game';
 
-import { watchAddOption, watchRemoveOption } from './bet';
+import { watchAddOption, watchRemoveOption, watchPlaceBet } from './bet';
 
 export default function* rootSaga() {
   yield all([
@@ -19,5 +19,6 @@ export default function* rootSaga() {
     watchGetGame(),
     watchAddOption(),
     watchRemoveOption(),
+    watchPlaceBet(),
   ]);
 }
