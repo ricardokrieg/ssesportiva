@@ -3,14 +3,37 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { compose } from 'redux';
 
-import Game from '../components/Game';
 import { getGame } from '../actions/game';
+import { Button, Card } from 'react-bootstrap';
+import { find } from 'lodash';
+import { addOption, removeOption } from '../actions/bet';
 
 class GameContainer extends React.Component {
   componentDidMount() {
-    const { id } = this.props.match.params;
+    const {
+      getGame,
+      match: {
+        params: { id },
+      },
+    } = this.props;
 
-    this.props.getGame(id);
+    getGame(id);
+  }
+
+  handleOptionClick(game, option) {
+    if (this.isSelectedOption(option)) {
+      this.props.removeOption(option);
+    } else {
+      this.props.addOption(game, option);
+    }
+  }
+
+  isSelectedOption(option) {
+    return find(this.props.options, { id: option.id });
+  }
+
+  btnVariant(option) {
+    return this.isSelectedOption(option) ? 'warning' : 'primary';
   }
 
   render() {
@@ -19,7 +42,31 @@ class GameContainer extends React.Component {
     if (error) return <div>{error.message}</div>;
     if (loading || !loaded) return <div>carregando</div>;
 
-    return <Game game={game} />;
+    return (
+      <div>
+        {game.quotes.map((quote, index) => (
+          <Card key={index + 1}>
+            <Card.Header>{quote.type}</Card.Header>
+            <Card.Body>
+              <div>
+                {quote.options.map((option, optionIndex) => (
+                  <div key={optionIndex + 1}>
+                    <div>{option.id}</div>
+                    <div>{option.title}</div>
+                    <Button
+                      variant={this.btnVariant(option)}
+                      onClick={() => this.handleOptionClick(game, option)}
+                    >
+                      {option.quote}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </Card.Body>
+          </Card>
+        ))}
+      </div>
+    );
   }
 }
 
@@ -29,12 +76,15 @@ const mapStateToProps = (state) => {
     error: state.game.error,
     loading: state.game.loading,
     loaded: state.game.loaded,
+    options: state.bet.options,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
     getGame: (id) => dispatch(getGame(id)),
+    addOption: (game, option) => dispatch(addOption(game, option)),
+    removeOption: (option) => dispatch(removeOption(option)),
   };
 };
 
