@@ -10,11 +10,18 @@ import { openToast } from '../actions/toast';
 
 export const getOptions = (state) => state.bet.options;
 
-export function* addOption({ payload: { game, option } }) {
+export function* addOption({ payload: { championship, game, quote, option } }) {
   const optionData = {
+    championship: championship.title,
+    championshipId: championship.id,
+    game: game.title,
+    gameDate: game.date,
     gameId: game.id,
+    group: championship.group,
     id: option.id,
     quote: option.quote,
+    quoteType: quote.type,
+    title: option.title,
   };
 
   let options = yield select(getOptions);

@@ -22,11 +22,11 @@ class ChampionshipContainer extends React.Component {
     getChampionship(id);
   }
 
-  handleOptionClick(game, option) {
+  handleOptionClick(championship, game, quote, option) {
     if (this.isSelectedOption(option)) {
       this.props.removeOption(option);
     } else {
-      this.props.addOption(game, option);
+      this.props.addOption(championship, game, quote, option);
     }
   }
 
@@ -66,7 +66,14 @@ class ChampionshipContainer extends React.Component {
                     <div>{option.title}</div>
                     <Button
                       variant={this.btnVariant(option)}
-                      onClick={() => this.handleOptionClick(game, option)}
+                      onClick={() =>
+                        this.handleOptionClick(
+                          championship,
+                          game,
+                          game.quote,
+                          option
+                        )
+                      }
                     >
                       {option.quote}
                     </Button>
@@ -94,7 +101,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     getChampionship: (id) => dispatch(getChampionship(id)),
-    addOption: (game, option) => dispatch(addOption(game, option)),
+    addOption: (championship, game, quote, option) =>
+      dispatch(addOption(championship, game, quote, option)),
     removeOption: (option) => dispatch(removeOption(option)),
   };
 };

@@ -21,11 +21,17 @@ class GameContainer extends React.Component {
     getGame(id);
   }
 
-  handleOptionClick(game, option) {
+  handleOptionClick(game, quote, option) {
     if (this.isSelectedOption(option)) {
       this.props.removeOption(option);
     } else {
-      this.props.addOption(game, option);
+      const { championshipId, championshipTitle, group } = game;
+      const championship = {
+        id: championshipId,
+        title: championshipTitle,
+        group,
+      };
+      this.props.addOption(championship, game, quote, option);
     }
   }
 
@@ -58,7 +64,9 @@ class GameContainer extends React.Component {
                     <div>{option.title}</div>
                     <Button
                       variant={this.btnVariant(option)}
-                      onClick={() => this.handleOptionClick(game, option)}
+                      onClick={() =>
+                        this.handleOptionClick(game, quote, option)
+                      }
                     >
                       {option.quote}
                     </Button>
@@ -86,7 +94,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     getGame: (id) => dispatch(getGame(id)),
-    addOption: (game, option) => dispatch(addOption(game, option)),
+    addOption: (championship, game, quote, option) =>
+      dispatch(addOption(championship, game, quote, option)),
     removeOption: (option) => dispatch(removeOption(option)),
   };
 };

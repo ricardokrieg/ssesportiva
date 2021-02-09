@@ -1,17 +1,35 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import NumberFormat from 'react-number-format';
+
 import { Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { removeOption, setBetValue } from '../actions/bet';
+import NumberFormat from 'react-number-format';
 
-import { setBetValue } from '../actions/bet';
+class BetSummaryContainer extends React.Component {
+  handleRemoveOptionClick(option) {
+    this.props.removeOption(option);
+  }
 
-class CurrentBet extends React.Component {
   render() {
     const { value, expectedReturn, options } = this.props;
 
     return (
       <div>
+        {options.map((option, optionIndex) => (
+          <div key={optionIndex + 1}>
+            <div>{option.title}</div>
+            <div>
+              {option.group} - {option.championship}
+            </div>
+            <div>{option.game}</div>
+            <div>{option.quoteType}</div>
+            <div>Cotação: {option.quote}</div>
+            <Button onClick={() => this.handleRemoveOptionClick(option)}>
+              Remover
+            </Button>
+          </div>
+        ))}
+
         <NumberFormat
           value={value}
           prefix={'R$ '}
@@ -30,9 +48,6 @@ class CurrentBet extends React.Component {
           fixedDecimalScale
           decimalScale={2}
         />
-        <Button>
-          <Link to="/finalizar">Finalizar {options.length}</Link>
-        </Button>
       </div>
     );
   }
@@ -48,8 +63,12 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
+    removeOption: (option) => dispatch(removeOption(option)),
     setBetValue: (value) => dispatch(setBetValue(value)),
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(CurrentBet);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(BetSummaryContainer);

@@ -1,7 +1,7 @@
 import { ADD_OPTION, REMOVE_OPTION, SET_BET_VALUE } from './actionTypes';
 
-export const addOption = (game, option) => {
-  return { type: ADD_OPTION, payload: { game, option } };
+export const addOption = (championship, game, quote, option) => {
+  return { type: ADD_OPTION, payload: { championship, game, quote, option } };
 };
 
 export const removeOption = (option) => {

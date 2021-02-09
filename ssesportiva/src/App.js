@@ -10,6 +10,7 @@ import UserContainer from './containers/UserContainer';
 import GroupListContainer from './containers/GroupListContainer';
 import ChampionshipContainer from './containers/ChampionshipContainer';
 import GameContainer from './containers/GameContainer';
+import BetSummaryContainer from './containers/BetSummaryContainer';
 import ToastContainer from './components/ToastContainer';
 
 class App extends Component {
@@ -32,6 +33,7 @@ class App extends Component {
                 component={ChampionshipContainer}
               />
               <Route exact path="/jogo/:id" component={GameContainer} />
+              <Route exact path="/finalizar" component={BetSummaryContainer} />
             </Col>
           </Row>
         </Container>
