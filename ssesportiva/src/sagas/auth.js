@@ -4,6 +4,9 @@ import {
   SIGNIN,
   SIGNIN_ERROR,
   SIGNIN_SUCCESS,
+  SIGNOUT,
+  SIGNOUT_SUCCESS,
+  SIGNOUT_ERROR,
   GET_MEMBER_DETAILS,
   GET_MEMBER_DETAILS_SUCCESS,
   GET_MEMBER_DETAILS_ERROR,
@@ -11,7 +14,6 @@ import {
 
 export function* signin({ payload: { email, password } }) {
   try {
-    console.log(email, password);
     yield firebase.auth().signInWithEmailAndPassword(email, password);
     yield put({ type: SIGNIN_SUCCESS });
   } catch (error) {
@@ -21,6 +23,19 @@ export function* signin({ payload: { email, password } }) {
 
 export function* watchSignin() {
   yield takeEvery(SIGNIN, signin);
+}
+
+export function* signout() {
+  try {
+    yield firebase.auth().signOut();
+    yield put({ type: SIGNOUT_SUCCESS });
+  } catch (error) {
+    yield put({ type: SIGNOUT_ERROR, error });
+  }
+}
+
+export function* watchSignout() {
+  yield takeEvery(SIGNOUT, signout);
 }
 
 export function* getMemberDetails() {

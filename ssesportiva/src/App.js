@@ -5,8 +5,7 @@ import Row from 'react-bootstrap/Row';
 import { Route } from 'react-router-dom';
 
 import Navigation from './components/Navigation';
-import Login from './containers/Login';
-import UserContainer from './containers/UserContainer';
+import MemberContainer from './containers/MemberContainer';
 import GroupListContainer from './containers/GroupListContainer';
 import ChampionshipContainer from './containers/ChampionshipContainer';
 import GameContainer from './containers/GameContainer';
@@ -25,8 +24,7 @@ class App extends Component {
           <Row className="row">
             <Col xs={12}>
               <Route exact path="/" component={GroupListContainer} />
-              <Route exact path="/nada" component={UserContainer} />
-              <Route exact path="/acesso" component={Login} />
+              <Route exact path="/acesso" component={MemberContainer} />
               <Route
                 exact
                 path="/campeonato/:id"

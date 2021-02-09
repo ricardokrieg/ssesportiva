@@ -6,17 +6,18 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 
 let Login = ({ dispatch }) => {
-  let input;
+  let email, password;
 
   return (
     <Form
       onSubmit={(e) => {
         e.preventDefault();
-        if (!input.value.trim()) {
+        if (!email.value.trim() || !password.value.trim()) {
           return;
         }
-        dispatch(signin(input.value, '12345678'));
-        input.value = '';
+        dispatch(signin(email.value, password.value));
+        email.value = '';
+        password.value = '';
       }}
     >
       <Form.Group controlId="formBasicEmail">
@@ -25,7 +26,14 @@ let Login = ({ dispatch }) => {
             type="email"
             placeholder="Email"
             ref={(node) => {
-              input = node;
+              email = node;
+            }}
+          />
+          <Form.Control
+            type="password"
+            placeholder="Password"
+            ref={(node) => {
+              password = node;
             }}
           />
           <InputGroup.Append>
