@@ -8,6 +8,7 @@ import { addOption, removeOption } from '../actions/bet';
 import { Accordion, Button, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { find } from 'lodash';
+import CurrentBet from '../components/CurrentBet';
 
 class ChampionshipContainer extends React.Component {
   componentDidMount() {
@@ -45,6 +46,8 @@ class ChampionshipContainer extends React.Component {
 
     return (
       <div>
+        <CurrentBet />
+
         {championship.games.map((game, index) => (
           <Card key={index + 1}>
             <Card.Header>

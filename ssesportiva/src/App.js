@@ -10,7 +10,7 @@ import UserContainer from './containers/UserContainer';
 import GroupListContainer from './containers/GroupListContainer';
 import ChampionshipContainer from './containers/ChampionshipContainer';
 import GameContainer from './containers/GameContainer';
-import ToastContainer from './containers/ToastContainer';
+import ToastContainer from './components/ToastContainer';
 
 class App extends Component {
   render() {

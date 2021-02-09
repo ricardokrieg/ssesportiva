@@ -7,6 +7,7 @@ import { getGame } from '../actions/game';
 import { Button, Card } from 'react-bootstrap';
 import { find } from 'lodash';
 import { addOption, removeOption } from '../actions/bet';
+import CurrentBet from '../components/CurrentBet';
 
 class GameContainer extends React.Component {
   componentDidMount() {
@@ -44,6 +45,8 @@ class GameContainer extends React.Component {
 
     return (
       <div>
+        <CurrentBet />
+
         {game.quotes.map((quote, index) => (
           <Card key={index + 1}>
             <Card.Header>{quote.type}</Card.Header>

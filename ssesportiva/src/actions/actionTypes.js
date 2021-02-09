@@ -29,6 +29,7 @@ export const ADD_OPTION = 'ADD_OPTION';
 export const ADD_OPTION_SUCCESS = 'ADD_OPTION_SUCCESS';
 export const REMOVE_OPTION = 'REMOVE_OPTION';
 export const REMOVE_OPTION_SUCCESS = 'REMOVE_OPTION_SUCCESS';
+export const SET_BET_VALUE = 'SET_BET_VALUE';
 
 export const OPEN_TOAST = 'OPEN_TOAST';
 export const CLOSE_TOAST = 'CLOSE_TOAST';
