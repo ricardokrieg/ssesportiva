@@ -1,30 +1,25 @@
 import React from 'react';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
-import { createStore, applyMiddleware } from 'redux';
-import createSagaMiddleware from 'redux-saga';
 import { BrowserRouter } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { isLoaded } from 'react-redux-firebase';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
 import { isNull } from 'lodash';
+import { PersistGate } from 'redux-persist/integration/react';
 
 import App from './App';
-import reducers from './reducers';
-import rootSaga from './sagas';
 import firebase from './services/firebase';
 import { getMemberDetails } from './actions/auth';
+import configureStore from './services/configureStore';
 
-const sagaMiddleware = createSagaMiddleware();
-const store = createStore(reducers, {}, applyMiddleware(sagaMiddleware));
+const { store, persistor } = configureStore();
 
 const rrfProps = {
   firebase,
   config: {},
   dispatch: store.dispatch,
 };
-
-sagaMiddleware.run(rootSaga);
 
 firebase.auth().onAuthStateChanged((user) => {
   if (!isNull(user)) {
@@ -41,13 +36,15 @@ function AuthIsLoaded({ children }) {
 
 render(
   <Provider store={store}>
-    <ReactReduxFirebaseProvider {...rrfProps}>
-      <BrowserRouter>
-        <AuthIsLoaded>
-          <App />
-        </AuthIsLoaded>
-      </BrowserRouter>
-    </ReactReduxFirebaseProvider>
+    <PersistGate loading={null} persistor={persistor}>
+      <ReactReduxFirebaseProvider {...rrfProps}>
+        <BrowserRouter>
+          <AuthIsLoaded>
+            <App />
+          </AuthIsLoaded>
+        </BrowserRouter>
+      </ReactReduxFirebaseProvider>
+    </PersistGate>
   </Provider>,
   document.getElementById('root')
 );
