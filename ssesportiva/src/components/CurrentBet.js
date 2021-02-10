@@ -11,7 +11,10 @@ class CurrentBet extends React.Component {
     const { value, expectedReturn, options } = this.props;
 
     return (
-      <div>
+      <div
+        className="bg-dark py-2 px-1 d-flex justify-content-between fixed-top"
+        style={{ marginTop: '54px' }}
+      >
         <NumberFormat
           value={value}
           prefix={'R$ '}
@@ -29,8 +32,9 @@ class CurrentBet extends React.Component {
           displayType={'text'}
           fixedDecimalScale
           decimalScale={2}
+          className="text-white"
         />
-        <Button>
+        <Button className="btn-success">
           <Link to="/finalizar">Finalizar {options.length}</Link>
         </Button>
       </div>

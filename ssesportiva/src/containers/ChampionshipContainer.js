@@ -5,7 +5,7 @@ import { compose } from 'redux';
 
 import { getChampionship } from '../actions/championship';
 import { addOption, removeOption } from '../actions/bet';
-import { Button, Row, Col } from 'react-bootstrap';
+import { Button, Row, Col, ButtonGroup } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { find } from 'lodash';
 import CurrentBet from '../components/CurrentBet';
@@ -50,8 +50,12 @@ class ChampionshipContainer extends React.Component {
       <>
         <CurrentBet />
 
-        <div className="bg-white">
-          <h3>{championship.title}</h3>
+        <div
+          className="bg-white"
+          className="px-3"
+          style={{ paddingTop: '54px' }}
+        >
+          <h3 className="text-center mt-3">{championship.title}</h3>
         </div>
 
         <div className="bg-light p-3">
@@ -67,12 +71,13 @@ class ChampionshipContainer extends React.Component {
                   </Link>
                 </Col>
 
-                <Col>
-                  <div>
+                <Col className="d-flex align-items-center">
+                  <ButtonGroup className="w-100" style={{ height: '40px' }}>
                     {game.quote.options.map((option, optionIndex) => (
                       <Button
                         key={optionIndex + 1}
-                        className="rounded btn-sm m-1"
+                        size="sm"
+                        className="border-white rounded"
                         variant={this.btnVariant(option)}
                         onClick={() =>
                           this.handleOptionClick(
@@ -86,7 +91,7 @@ class ChampionshipContainer extends React.Component {
                         {option.quote}
                       </Button>
                     ))}
-                  </div>
+                  </ButtonGroup>
                 </Col>
               </Row>
             </div>

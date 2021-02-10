@@ -9,11 +9,8 @@ import {
   PLACE_BET_LOADING,
   PLACE_BET_SUCCESS,
   PLACE_BET_ERROR,
-  GET_CHAMPIONSHIP_LOADING,
-  GET_CHAMPIONSHIP_ERROR,
-  GET_CHAMPIONSHIP_SUCCESS,
 } from '../actions/actionTypes';
-import { openToast } from '../actions/toast';
+import { openSuccessToast, openErrorToast } from '../actions/toast';
 import firebase from '../services/firebase';
 
 export const getValue = (state) => state.bet.value;
@@ -36,8 +33,9 @@ export function* addOption({ payload: { championship, game, quote, option } }) {
   let options = yield select(getOptions);
 
   if (find(options, { gameId: optionData.gameId })) {
-    // TODO pick correct error message from old project
-    yield put(openToast('Múltiplas apostas na mesma partida'));
+    yield put(
+      openErrorToast('Aposta inválida', 'Múltiplas apostas na mesma partida')
+    );
     return;
   }
 
@@ -97,12 +95,13 @@ export function* placeBet() {
       type: PLACE_BET_SUCCESS,
       payload: { code: data['code'] },
     });
-    yield put(openToast(`Código: ${data['code']}`));
+    yield put(openSuccessToast('', `Código: ${data['code']}`));
   } catch (error) {
     yield put({
       type: PLACE_BET_ERROR,
       payload: { error },
     });
+    yield put(openErrorToast('', 'Aconteceu um erro'));
   }
 }
 

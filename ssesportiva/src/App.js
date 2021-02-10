@@ -12,7 +12,7 @@ import TicketContainer from './containers/TicketContainer';
 import ToastContainer from './components/ToastContainer';
 
 const AppContainer = styled.div`
-  padding-top: 70px;
+  padding-top: 54px;
 `;
 
 class App extends Component {

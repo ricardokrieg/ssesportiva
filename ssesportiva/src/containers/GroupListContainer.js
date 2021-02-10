@@ -68,7 +68,7 @@ class GroupListContainer extends React.Component {
     if (error) return <Error error={error} />;
 
     return (
-      <Accordion>
+      <Accordion className="mt-3">
         {groups.map((group, index) => (
           <Group className="mx-1 mb-2 border rounded" key={index + 1}>
             <Toggle eventKey={index + 1}>{group.name}</Toggle>

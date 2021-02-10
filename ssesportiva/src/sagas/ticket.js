@@ -6,7 +6,7 @@ import {
   GET_TICKET_ERROR,
   GET_TICKET_LOADING,
 } from '../actions/actionTypes';
-import { openToast } from '../actions/toast';
+import { openErrorToast } from '../actions/toast';
 
 export function* getTicket({ payload: { id } }) {
   yield put({ type: GET_TICKET_LOADING });
@@ -23,7 +23,7 @@ export function* getTicket({ payload: { id } }) {
         type: GET_TICKET_ERROR,
         payload: { error },
       });
-      yield put(openToast(`Bilhete não encontrado`));
+      yield put(openErrorToast(`Bilhete não encontrado`));
       return;
     }
 
@@ -36,7 +36,7 @@ export function* getTicket({ payload: { id } }) {
       type: GET_TICKET_ERROR,
       payload: { error },
     });
-    yield put(openToast(`Ocorreu um erro!`));
+    yield put(openErrorToast(`Ocorreu um erro!`));
   }
 }
 
