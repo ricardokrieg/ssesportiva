@@ -7,7 +7,6 @@ import {
 const initialState = {
   data: null,
   loading: false,
-  loaded: false,
   error: null,
 };
 
@@ -29,7 +28,6 @@ export default function gameReducer(state = initialState, action) {
         data: game,
         error,
         loading: false,
-        loaded: !error,
       };
     default:
       return state;

@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import {
   GET_GROUPS_SUCCESS,
   GET_GROUPS_ERROR,
@@ -7,7 +9,7 @@ import {
 const initialState = {
   data: [],
   loading: false,
-  loaded: false,
+  loadedAt: null,
   error: null,
 };
 
@@ -19,17 +21,28 @@ export default function groupsReducer(state = initialState, action) {
         loading: true,
       };
     case GET_GROUPS_SUCCESS:
-    case GET_GROUPS_ERROR:
       const {
-        payload: { groups, error },
+        payload: { groups },
       } = action;
 
       return {
         ...state,
         data: groups,
+        error: null,
+        loading: false,
+        loadedAt: moment(),
+      };
+    case GET_GROUPS_ERROR:
+      const {
+        payload: { error },
+      } = action;
+
+      return {
+        ...state,
+        data: [],
         error,
         loading: false,
-        loaded: !error,
+        loadedAt: null,
       };
     default:
       return state;

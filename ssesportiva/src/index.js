@@ -28,7 +28,6 @@ firebase.auth().onAuthStateChanged((user) => {
   }
 });
 
-// TODO add loader
 function AuthIsLoaded({ children }) {
   const auth = useSelector((state) => state.firebase.auth);
   if (!isLoaded(auth)) return <SplashScreen />;

@@ -9,6 +9,8 @@ import { Button, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { find } from 'lodash';
 import CurrentBet from '../components/CurrentBet';
+import Loading from '../components/Loading';
+import Error from '../components/Error';
 
 class ChampionshipContainer extends React.Component {
   componentDidMount() {
@@ -39,10 +41,10 @@ class ChampionshipContainer extends React.Component {
   }
 
   render() {
-    const { loading, loaded, error, championship } = this.props;
+    const { loading, error, championship } = this.props;
 
-    if (error) return <div>{error.message}</div>;
-    if (loading || !loaded) return <div>carregando</div>;
+    if (loading) return <Loading />;
+    if (error) return <Error error={error} />;
 
     return (
       <>
@@ -100,7 +102,6 @@ const mapStateToProps = (state) => {
     championship: state.championship.data,
     error: state.championship.error,
     loading: state.championship.loading,
-    loaded: state.championship.loaded,
     options: state.bet.options,
   };
 };

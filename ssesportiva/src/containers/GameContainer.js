@@ -8,6 +8,8 @@ import { Button, Card } from 'react-bootstrap';
 import { find } from 'lodash';
 import { addOption, removeOption } from '../actions/bet';
 import CurrentBet from '../components/CurrentBet';
+import Loading from '../components/Loading';
+import Error from '../components/Error';
 
 class GameContainer extends React.Component {
   componentDidMount() {
@@ -44,10 +46,10 @@ class GameContainer extends React.Component {
   }
 
   render() {
-    const { loading, loaded, error, game } = this.props;
+    const { loading, error, game } = this.props;
 
-    if (error) return <div>{error.message}</div>;
-    if (loading || !loaded) return <div>carregando</div>;
+    if (loading) return <Loading />;
+    if (error) return <Error error={error} />;
 
     return (
       <div>
@@ -86,7 +88,6 @@ const mapStateToProps = (state) => {
     game: state.game.data,
     error: state.game.error,
     loading: state.game.loading,
-    loaded: state.game.loaded,
     options: state.bet.options,
   };
 };

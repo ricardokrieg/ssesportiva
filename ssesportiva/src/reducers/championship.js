@@ -7,7 +7,6 @@ import {
 const initialState = {
   data: null,
   loading: false,
-  loaded: false,
   error: null,
 };
 
@@ -19,17 +18,26 @@ export default function championshipReducer(state = initialState, action) {
         loading: true,
       };
     case GET_CHAMPIONSHIP_SUCCESS:
-    case GET_CHAMPIONSHIP_ERROR:
       const {
-        payload: { championship, error },
+        payload: { championship },
       } = action;
 
       return {
         ...state,
         data: championship,
+        error: null,
+        loading: false,
+      };
+    case GET_CHAMPIONSHIP_ERROR:
+      const {
+        payload: { error },
+      } = action;
+
+      return {
+        ...state,
+        data: null,
         error,
         loading: false,
-        loaded: !error,
       };
     default:
       return state;

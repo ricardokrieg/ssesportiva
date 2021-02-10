@@ -6,6 +6,7 @@ import {
   faChevronDown,
   faChevronCircleUp,
 } from '@fortawesome/free-solid-svg-icons';
+import moment from 'moment';
 
 import { getGroups } from '../actions/groups';
 import {
@@ -14,13 +15,10 @@ import {
   useAccordionToggle,
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import Loading from '../components/Loading';
+import Error from '../components/Error';
 
 const Group = styled.div``;
-
-const GroupHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-`;
 
 const Championships = styled.div``;
 
@@ -37,19 +35,25 @@ const Toggle = ({ children, eventKey, callback }) => {
   const isCurrentEventKey = currentEventKey === eventKey;
 
   return (
-    <GroupHeader onClick={decoratedOnClick}>
+    <div
+      className="d-flex justify-content-between p-3"
+      onClick={decoratedOnClick}
+    >
       {children}
       <FontAwesomeIcon
         icon={isCurrentEventKey ? faChevronCircleUp : faChevronDown}
       />
-    </GroupHeader>
+    </div>
   );
 };
 
 class GroupListContainer extends React.Component {
   componentDidMount() {
-    if (!this.props.loaded) {
-      this.props.getGroups();
+    const { loadedAt, getGroups } = this.props;
+
+    const tenMinutes = 10 * 60 * 1000;
+    if (!loadedAt || moment().diff(loadedAt) > tenMinutes) {
+      getGroups();
     }
   }
 
@@ -60,14 +64,15 @@ class GroupListContainer extends React.Component {
   render() {
     const { loading, error, groups } = this.props;
 
-    if (loading) return <div>carregando</div>;
-    if (error) return <div>{error.message}</div>;
+    if (loading) return <Loading />;
+    if (error) return <Error error={error} />;
 
     return (
       <Accordion>
         {groups.map((group, index) => (
-          <Group className="mx-1 p-3 border-bottom" key={index + 1}>
+          <Group className="mx-1 mb-2 border rounded" key={index + 1}>
             <Toggle eventKey={index + 1}>{group.name}</Toggle>
+
             <Accordion.Collapse eventKey={index + 1}>
               <Championships className="bg-light rounded p-3 mt-2">
                 {group.championships.map((championship, championshipIndex) => (
@@ -94,7 +99,7 @@ const mapStateToProps = (state) => {
     groups: state.groups.data,
     error: state.groups.error,
     loading: state.groups.loading,
-    loaded: state.groups.loaded,
+    loadedAt: state.groups.loadedAt,
   };
 };
 

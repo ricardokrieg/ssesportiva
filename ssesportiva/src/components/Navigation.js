@@ -23,25 +23,25 @@ const Navigation = () => (
           <NavItem>
             <Link to="/" className="nav-link">
               <FontAwesomeIcon icon={faFutbol} />
-              Futebol
+              <span className="mx-2">Futebol</span>
             </Link>
           </NavItem>
           <NavItem>
             <Link to="/conferir-bilhete" className="nav-link">
               <FontAwesomeIcon icon={faTicketAlt} />
-              <span className="ml-1">Conferir Bilhete</span>
+              <span className="mx-2">Conferir Bilhete</span>
             </Link>
           </NavItem>
           <NavItem>
             <Link to="/regulamento" className="nav-link">
               <FontAwesomeIcon icon={faFileAlt} />
-              Regulamento
+              <span className="mx-2">Regulamento</span>
             </Link>
           </NavItem>
           <NavItem>
             <Link to="/acesso" className="nav-link">
               <FontAwesomeIcon icon={faKey} />
-              Acesso
+              <span className="mx-2">Acesso</span>
             </Link>
           </NavItem>
         </Nav>
