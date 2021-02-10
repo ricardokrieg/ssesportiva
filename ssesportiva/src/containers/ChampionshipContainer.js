@@ -5,7 +5,7 @@ import { compose } from 'redux';
 
 import { getChampionship } from '../actions/championship';
 import { addOption, removeOption } from '../actions/bet';
-import { Accordion, Button, Card } from 'react-bootstrap';
+import { Button, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { find } from 'lodash';
 import CurrentBet from '../components/CurrentBet';
@@ -45,45 +45,52 @@ class ChampionshipContainer extends React.Component {
     if (loading || !loaded) return <div>carregando</div>;
 
     return (
-      <div>
+      <>
         <CurrentBet />
 
-        {championship.games.map((game, index) => (
-          <Card key={index + 1}>
-            <Card.Header>
-              <Accordion.Toggle as={Button} variant="link" eventKey={index + 1}>
-                <Link to={'/jogo/' + game.id}>
-                  {game.title} {game.date}
-                </Link>
-              </Accordion.Toggle>
-            </Card.Header>
-            <Card.Body>
-              <div>{game.quote.type}</div>
-              <div>
-                {game.quote.options.map((option, optionIndex) => (
-                  <div key={optionIndex + 1}>
-                    <div>{option.id}</div>
-                    <div>{option.title}</div>
-                    <Button
-                      variant={this.btnVariant(option)}
-                      onClick={() =>
-                        this.handleOptionClick(
-                          championship,
-                          game,
-                          game.quote,
-                          option
-                        )
-                      }
-                    >
-                      {option.quote}
-                    </Button>
+        <div className="bg-white">
+          <h3>{championship.title}</h3>
+        </div>
+
+        <div className="bg-light p-3">
+          {championship.games.map((game, index) => (
+            <div
+              className="shadow-sm p-3 mb-2 bg-white rounded"
+              key={index + 1}
+            >
+              <Row>
+                <Col>
+                  <Link to={'/jogo/' + game.id}>
+                    {game.title} {game.date}
+                  </Link>
+                </Col>
+
+                <Col>
+                  <div>
+                    {game.quote.options.map((option, optionIndex) => (
+                      <Button
+                        key={optionIndex + 1}
+                        className="rounded btn-sm m-1"
+                        variant={this.btnVariant(option)}
+                        onClick={() =>
+                          this.handleOptionClick(
+                            championship,
+                            game,
+                            game.quote,
+                            option
+                          )
+                        }
+                      >
+                        {option.quote}
+                      </Button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </Card.Body>
-          </Card>
-        ))}
-      </div>
+                </Col>
+              </Row>
+            </div>
+          ))}
+        </div>
+      </>
     );
   }
 }

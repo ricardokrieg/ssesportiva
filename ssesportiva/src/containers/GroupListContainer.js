@@ -74,7 +74,6 @@ class GroupListContainer extends React.Component {
                   <Link
                     key={index + '-' + championshipIndex}
                     to={'/campeonato/' + championship.id}
-                    component={Championship}
                   >
                     <div className="shadow-sm p-3 mb-2 bg-white rounded">
                       {championship.title}

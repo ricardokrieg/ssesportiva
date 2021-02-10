@@ -158,6 +158,7 @@ function isValidGame(game) {
     championshipTitle,
     championshipId,
     date,
+    dateDay,
     id,
     title,
     quotes,
@@ -179,6 +180,9 @@ function isValidGame(game) {
     console.error(new Error(`invalid game.date: ${date}`));
     console.error(new Error(`Game Date: ${moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo')}`));
     console.error(new Error(`Current Date: ${moment().tz('America/Sao_Paulo')}`));
+    return false;
+  }
+  if (!isValidString(dateDay) || dateDay.length !== 10) {
     return false;
   }
   if (!isValidString(id)) {
@@ -638,6 +642,7 @@ async function startScrape() {
             game['group'] = championshipData['group'];
             game['championshipTitle'] = championshipData['title'];
             game['championshipId'] = championshipData['id'];
+            game['dateDay'] = game['date'].split(' ')[0];
 
             game = validateGameData(game);
             if (isValidGame(game)) {
@@ -744,6 +749,35 @@ exports.getGame = functions
       }
 
       return docSnapshot.data();
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getGamesByDate = functions
+  .https
+  .onCall(async (data, _context) => {
+    try {
+      const { date } = data;
+
+      if (isValidString(date) || date.length !== 10) {
+        return { error: "Data inválida" };
+      }
+
+      const query = gamesCol.where('dateDay', '==', date);
+      const querySnapshot = await query.get();
+
+      if (querySnapshot.empty) {
+        return { error: "Nenhuma partida encontrada para essa data." };
+      }
+
+      const games = [];
+      for (let docSnapshot of querySnapshot.docs) {
+        games.push(docSnapshot.data());
+      }
+
+      return games;
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };

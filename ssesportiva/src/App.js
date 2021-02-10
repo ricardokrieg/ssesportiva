@@ -16,37 +16,18 @@ import ToastContainer from './components/ToastContainer';
 class App extends Component {
   render() {
     return (
-      <div>
+      <>
         <Navigation />
+        <ToastContainer />
 
-        <Container>
-          <ToastContainer />
-
-          <Row className="row">
-            <Col xs={12}>
-              <Route exact path="/" component={GroupListContainer} />
-              <Route exact path="/acesso" component={MemberContainer} />
-              <Route
-                exact
-                path="/campeonato/:id"
-                component={ChampionshipContainer}
-              />
-              <Route exact path="/jogo/:id" component={GameContainer} />
-              <Route exact path="/finalizar" component={BetSummaryContainer} />
-              <Route
-                exact
-                path="/conferir-bilhete"
-                component={TicketContainer}
-              />
-              <Route
-                exact
-                path="/conferir-bilhete/:id"
-                component={TicketContainer}
-              />
-            </Col>
-          </Row>
-        </Container>
-      </div>
+        <Route exact path="/" component={GroupListContainer} />
+        <Route exact path="/acesso" component={MemberContainer} />
+        <Route exact path="/campeonato/:id" component={ChampionshipContainer} />
+        <Route exact path="/jogo/:id" component={GameContainer} />
+        <Route exact path="/finalizar" component={BetSummaryContainer} />
+        <Route exact path="/conferir-bilhete" component={TicketContainer} />
+        <Route exact path="/conferir-bilhete/:id" component={TicketContainer} />
+      </>
     );
   }
 }
