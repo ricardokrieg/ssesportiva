@@ -9,6 +9,7 @@ import { isNull } from 'lodash';
 import { PersistGate } from 'redux-persist/integration/react';
 
 import App from './App';
+import SplashScreen from './components/SplashScreen';
 import firebase from './services/firebase';
 import { getMemberDetails } from './actions/auth';
 import configureStore from './services/configureStore';
@@ -30,7 +31,7 @@ firebase.auth().onAuthStateChanged((user) => {
 // TODO add loader
 function AuthIsLoaded({ children }) {
   const auth = useSelector((state) => state.firebase.auth);
-  if (!isLoaded(auth)) return <div>splash screen...</div>;
+  if (!isLoaded(auth)) return <SplashScreen />;
   return children;
 }
 

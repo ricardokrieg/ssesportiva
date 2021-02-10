@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import Container from 'react-bootstrap/Container';
-import Col from 'react-bootstrap/Col';
-import Row from 'react-bootstrap/Row';
 import { Route } from 'react-router-dom';
+import styled from 'styled-components';
 
 import Navigation from './components/Navigation';
 import MemberContainer from './containers/MemberContainer';
@@ -13,10 +11,14 @@ import BetSummaryContainer from './containers/BetSummaryContainer';
 import TicketContainer from './containers/TicketContainer';
 import ToastContainer from './components/ToastContainer';
 
+const AppContainer = styled.div`
+  padding-top: 70px;
+`;
+
 class App extends Component {
   render() {
     return (
-      <>
+      <AppContainer>
         <Navigation />
         <ToastContainer />
 
@@ -27,7 +29,7 @@ class App extends Component {
         <Route exact path="/finalizar" component={BetSummaryContainer} />
         <Route exact path="/conferir-bilhete" component={TicketContainer} />
         <Route exact path="/conferir-bilhete/:id" component={TicketContainer} />
-      </>
+      </AppContainer>
     );
   }
 }
