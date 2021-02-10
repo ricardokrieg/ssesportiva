@@ -37,3 +37,8 @@ export const PLACE_BET_ERROR = 'PLACE_BET_ERROR';
 
 export const OPEN_TOAST = 'OPEN_TOAST';
 export const CLOSE_TOAST = 'CLOSE_TOAST';
+
+export const GET_TICKET = 'GET_TICKET';
+export const GET_TICKET_SUCCESS = 'GET_TICKET_SUCCESS';
+export const GET_TICKET_ERROR = 'GET_TICKET_ERROR';
+export const GET_TICKET_LOADING = 'GET_TICKET_LOADING';

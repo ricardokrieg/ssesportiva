@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import { removeOption, setBetValue, placeBet } from '../actions/bet';
 import NumberFormat from 'react-number-format';
-import ToastContainer from '../components/ToastContainer';
 
 class BetSummaryContainer extends React.Component {
   handleRemoveOptionClick(option) {

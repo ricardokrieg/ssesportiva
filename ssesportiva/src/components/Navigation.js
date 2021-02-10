@@ -5,11 +5,11 @@ import { Link } from 'react-router-dom';
 
 const NavigationBar = styled.div`
   margin-bottom: 15px;
-  background-color: lightgray;
+  background-color: none;
 `;
 
 const Navigation = () => (
-  <Navbar bg="light" expand="lg">
+  <Navbar expand="lg">
     <Navbar.Brand>
       <Link to="/">
         <img

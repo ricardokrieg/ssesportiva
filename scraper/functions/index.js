@@ -254,6 +254,11 @@ function isValidChampionship(championship) {
     console.error(new Error(`invalid championship.title: ${title}`));
     return false;
   }
+
+  if (championship['isDayGames']) {
+    return true;
+  }
+
   if (!games || games.length < 1) {
     console.error(new Error(`invalid championship.games: ${games}`));
     return false;
@@ -268,12 +273,15 @@ function isValidChampionship(championship) {
 }
 
 function validateChampionshipData(championship) {
+  if (championship['isDayGames']) {
+    return championship;
+  }
+
   let {
     games,
   } = championship;
 
   games = _.filter(games, isValidChampionshipGame);
-
   return { ...championship, games };
 }
 
@@ -411,23 +419,57 @@ async function scrapeGame(title, date, url) {
   }
 }
 
-async function scrapeChampionship(category, title, url) {
+async function scrapeChampionship(category, title, url, isDayGames) {
   try {
     const id = url.match(/.*?idcampeonato=(?<id>\d+)/).groups['id']
 
     const html = await rp(url);
     const games = [];
+    const groups = [];
 
     const trs = $('table#conteudo_TableJogos tr', html);
     for (let tr of trs) {
-      if ($('td.th_1', tr).length) {
+      if ($('td.tcpais', tr).length) {
+        groups.push({ name: _.trim($(tr).text()), championships: [] });
+      } else if ($('td.tccampeonato', tr).length) {
+        const championshipTitle = _.trim($(tr).text()).slice(_.trim($('span', tr).text()).length);
+        _.last(groups)['championships'].push({ title: championshipTitle, games: [] });
+      } else if ($('td.th_1', tr).length) {
         const title = $('td.th_1 b', tr).text();
         const date = $('td.th_1 p', tr).text();
         const link = $('td.th_5 a', tr)[0];
 
         if (link) {
-          const gameUrl = link.attribs.href.replace('./', baseUrl + '/');
-          games.push(scrapeGame(title, date, gameUrl));
+          if (isDayGames) {
+            const gameId = link.attribs.href.match(/.*?idpartida=(?<id>\d+)/).groups['id'];
+
+            const options = [
+              {
+                title: 'Casa',
+                quote: parseFloat($('td.th_2', tr).text().replace(',', '.')),
+                id: $('td.th_2 a', tr)[0].attribs.id.match(/conteudo_opc(\d+)/)[1],
+              },
+              {
+                title: 'Empate',
+                quote: parseFloat($('td.th_3', tr).text().replace(',', '.')),
+                id: $('td.th_3 a', tr)[0].attribs.id.match(/conteudo_opc(\d+)/)[1],
+              },
+              {
+                title: 'Fora',
+                quote: parseFloat($('td.th_4', tr).text().replace(',', '.')),
+                id: $('td.th_4 a', tr)[0].attribs.id.match(/conteudo_opc(\d+)/)[1],
+              },
+            ];
+
+            const quotes = [{ type: 'Vencedor do Encontro', options }];
+
+            const lastGroup = _.last(groups);
+            const lastChampionship = _.last(lastGroup['championships']);
+            lastChampionship['games'].push({ id: gameId, title, date, quotes });
+          } else {
+            const gameUrl = link.attribs.href.replace('./', baseUrl + '/');
+            games.push(scrapeGame(title, date, gameUrl));
+          }
         } else {
           const options = [
             {
@@ -448,16 +490,33 @@ async function scrapeChampionship(category, title, url) {
           ];
 
           const quotes = [{ type: 'Vencedor do Encontro', options }];
-          games.push({ title, date, quotes });
+
+          if (isDayGames) {
+            const lastGroup = _.last(groups);
+            const lastChampionship = _.last(lastGroup['championships']);
+            lastChampionship['games'].push({ title, date, quotes });
+          } else {
+            games.push({ title, date, quotes });
+          }
         }
       }
     }
 
-    return {
-      id,
-      category,
-      title,
-      games: await Promise.all(games),
+    if (isDayGames) {
+      return {
+        id,
+        category,
+        title,
+        isDayGames,
+        groups,
+      };
+    } else {
+      return {
+        id,
+        category,
+        title,
+        games: await Promise.all(games),
+      };
     }
   } catch (err) {
     console.error(err);
@@ -473,44 +532,33 @@ async function scrapeContent() {
   const categories = [];
 
   const countries = $('#drop2 #AccordionPaises .accordionHeader', html);
-  let dayGames = null;
   for (let country of countries) {
-    if (country.attribs.id === `0_header`) {
-      dayGames = {
-        category: _.trim($(country).text()),
-        championships: [],
-      };
-
-      const championshipsNode = $('a', country.next);
-      for (let championshipNode of championshipsNode) {
-        const title = _.trim($(championshipNode).text());
-        const url = championshipNode.attribs.href.replace('./', baseUrl + '/');
-
-        dayGames['championships'].push({ title, url });
-      }
-
-      continue;
-    }
+    let isDayGames = false;
 
     const category = _.trim($(country).text());
     const championships = [];
+
+    if (category.toLowerCase() === `jogos do dia`) {
+      isDayGames = true;
+    }
 
     const championshipsNode = $('a', country.next);
     for (let championshipNode of championshipsNode) {
       const title = _.trim($(championshipNode).text());
       const url = championshipNode.attribs.href.replace('./', baseUrl + '/');
 
-      // championships.push(scrapeChampionship(category, title, url));
+      try {
+        championships.push(scrapeChampionship(category, title, url, isDayGames));
+      } catch (e) {
+        console.error(e);
+        console.log(title, url, isDayGames);
+      }
     }
 
     categories.push({
       name: category,
       championships: await Promise.all(championships),
     });
-  }
-
-  if (dayGames) {
-    console.log(dayGames);
   }
 
   debug(util.inspect(categories, false, null, true));
@@ -523,7 +571,6 @@ async function startScrape() {
 
   const groups = await scrapeContent();
 
-  return;
   // mark each championship to be removed
   let querySnapshot = await championshipsCol.get();
   for (let docSnapshot of querySnapshot.docs) {
@@ -550,34 +597,64 @@ async function startScrape() {
       groupData['championships'].push({ ...championshipData });
 
       championshipData['group'] = group['name'];
-      championshipData['games'] = [];
-      for (let game of championship['games']) {
-        const gameData = { title: game['title'], date: game['date'] };
-        const quoteData = game['quotes'][0];
 
-        if (game['id'] && quoteData) {
-          gameData['id'] = game['id'];
-          gameData['quote'] = quoteData;
+      if (championship['isDayGames']) {
+        championshipData['groups'] = [];
 
-          game['group'] = championshipData['group'];
-          game['championshipTitle'] = championshipData['title'];
-          game['championshipId'] = championshipData['id'];
+        for (let nestedGroup of championship['groups']) {
+          const nestedGroupData = { name: nestedGroup['name'], championships: [] };
 
-          game = validateGameData(game);
-          if (isValidGame(game)) {
-            console.log(`Game ${game['id']} OK`);
-            await gamesCol.doc(game['id']).set({ ...game, keep: true });
-          } else {
-            console.error(new Error(`invalid game ${game['id']}: ${JSON.stringify(game)}`));
+          for (let nestedChampionship of nestedGroup['championships']) {
+            const nestedChampionshipData = { title: nestedChampionship['title'], games: [] };
+
+            for (let game of nestedChampionship['games']) {
+              const gameData = {title: game['title'], date: game['date']};
+              const quoteData = game['quotes'][0];
+
+              if (game['id'] && quoteData) {
+                gameData['id'] = game['id'];
+                gameData['quote'] = quoteData;
+              }
+
+              nestedChampionshipData['games'].push(gameData);
+            }
+
+            nestedGroupData['championships'].push(nestedChampionshipData);
           }
-        }
 
-        championshipData['games'].push(gameData);
+          championshipData['groups'].push(nestedGroupData);
+        }
+      } else {
+        championshipData['games'] = [];
+
+        for (let game of championship['games']) {
+          const gameData = {title: game['title'], date: game['date']};
+          const quoteData = game['quotes'][0];
+
+          if (game['id'] && quoteData) {
+            gameData['id'] = game['id'];
+            gameData['quote'] = quoteData;
+
+            game['group'] = championshipData['group'];
+            game['championshipTitle'] = championshipData['title'];
+            game['championshipId'] = championshipData['id'];
+
+            game = validateGameData(game);
+            if (isValidGame(game)) {
+              console.log(`Game ${game['id']} OK`);
+              await gamesCol.doc(game['id']).set({...game, keep: true});
+            } else {
+              console.error(new Error(`invalid game ${game['id']}: ${JSON.stringify(game)}`));
+            }
+          }
+
+          championshipData['games'].push(gameData);
+        }
       }
 
       championshipData = validateChampionshipData(championshipData);
       if (isValidChampionship(championshipData)) {
-        await championshipsCol.doc(championship['id']).set({ ...championshipData, keep: true });
+        await championshipsCol.doc(championship['id']).set({...championshipData, keep: true});
         console.log(`Championship ${championship['id']} OK`);
       } else {
         console.error(new Error(`invalid championship ${championship['id']}: ${JSON.stringify(championshipData)}`));
