@@ -16,6 +16,7 @@ class CurrentBet extends React.Component {
         style={{ marginTop: '54px' }}
       >
         <NumberFormat
+          decimalSeparator=","
           value={value}
           prefix={'R$ '}
           displayType={'input'}
@@ -27,6 +28,7 @@ class CurrentBet extends React.Component {
           }}
         />
         <NumberFormat
+          decimalSeparator=","
           value={expectedReturn}
           prefix={'R$ '}
           displayType={'text'}
