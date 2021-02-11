@@ -3,6 +3,7 @@ import {
   REMOVE_OPTION,
   SET_BET_VALUE,
   PLACE_BET,
+  CLEAR_BET_CODE,
 } from './actionTypes';
 
 export const addOption = (championship, game, quote, option) => {
@@ -19,4 +20,8 @@ export const setBetValue = (value) => {
 
 export const placeBet = () => {
   return { type: PLACE_BET };
+};
+
+export const clearBetCode = () => {
+  return { type: CLEAR_BET_CODE };
 };

@@ -1,11 +1,16 @@
 import React from 'react';
 import ReactLoading from 'react-loading';
+import { isUndefined } from 'lodash';
 
-const Loading = () => {
+const Loading = ({ height }) => {
+  if (isUndefined(height)) {
+    height = '50vh';
+  }
+
   return (
     <div
       className="d-flex flex-column justify-content-center"
-      style={{ height: '50vh' }}
+      style={{ height }}
     >
       <ReactLoading
         type="bubbles"

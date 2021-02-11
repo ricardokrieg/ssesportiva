@@ -88,14 +88,14 @@ export function* placeBet() {
         type: PLACE_BET_ERROR,
         payload: { error },
       });
+      yield put(openErrorToast('Erro', data.error));
       return;
     }
 
     yield put({
       type: PLACE_BET_SUCCESS,
-      payload: { code: data['code'] },
+      payload: { code: data.code },
     });
-    yield put(openSuccessToast('', `Código: ${data['code']}`));
   } catch (error) {
     yield put({
       type: PLACE_BET_ERROR,

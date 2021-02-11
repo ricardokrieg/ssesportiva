@@ -8,6 +8,7 @@ import GroupListContainer from './containers/GroupListContainer';
 import ChampionshipContainer from './containers/ChampionshipContainer';
 import GameContainer from './containers/GameContainer';
 import BetSummaryContainer from './containers/BetSummaryContainer';
+import BetCodeContainer from './containers/BetCodeContainer';
 import TicketContainer from './containers/TicketContainer';
 import ToastContainer from './components/ToastContainer';
 
@@ -27,6 +28,7 @@ class App extends Component {
         <Route exact path="/campeonato/:id" component={ChampionshipContainer} />
         <Route exact path="/jogo/:id" component={GameContainer} />
         <Route exact path="/finalizar" component={BetSummaryContainer} />
+        <Route exact path="/sucesso" component={BetCodeContainer} />
         <Route exact path="/conferir-bilhete" component={TicketContainer} />
         <Route exact path="/conferir-bilhete/:id" component={TicketContainer} />
       </AppContainer>

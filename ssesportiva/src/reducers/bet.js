@@ -7,6 +7,7 @@ import {
   PLACE_BET_LOADING,
   PLACE_BET_SUCCESS,
   PLACE_BET_ERROR,
+  CLEAR_BET_CODE,
 } from '../actions/actionTypes';
 
 const initialState = {
@@ -16,6 +17,7 @@ const initialState = {
   options: [],
   error: null,
   loading: true,
+  code: '',
 };
 
 const calculateQuote = (options) => {
@@ -60,6 +62,7 @@ export default function betReducer(state = initialState, action) {
       return {
         ...state,
         loading: true,
+        code: '',
       };
     case PLACE_BET_SUCCESS:
       const {
@@ -80,7 +83,13 @@ export default function betReducer(state = initialState, action) {
       return {
         ...state,
         loading: false,
+        code: '',
         error,
+      };
+    case CLEAR_BET_CODE:
+      return {
+        ...state,
+        code: '',
       };
     default:
       return state;

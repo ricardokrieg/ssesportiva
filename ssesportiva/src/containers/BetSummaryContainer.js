@@ -1,14 +1,23 @@
 import React from 'react';
 import { connect } from 'react-redux';
-
 import { Button, Col, Row } from 'react-bootstrap';
 import { removeOption, setBetValue, placeBet } from '../actions/bet';
 import NumberFormat from 'react-number-format';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import Form from 'react-bootstrap/Form';
+import { isEmpty } from 'lodash';
+import Loading from '../components/Loading';
+import { compose } from 'redux';
+import { withRouter } from 'react-router';
 
 class BetSummaryContainer extends React.Component {
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (isEmpty(prevProps.code) && !isEmpty(this.props.code)) {
+      this.props.history.push('/sucesso');
+    }
+  }
+
   handleRemoveOptionClick(option) {
     this.props.removeOption(option);
   }
@@ -17,8 +26,89 @@ class BetSummaryContainer extends React.Component {
     this.props.placeBet();
   }
 
+  renderFooter() {
+    const { loading } = this.props;
+
+    if (loading) {
+      return (
+        <div className="bg-dark py-3">
+          <Loading height="100%" />
+        </div>
+      );
+    }
+
+    const { value, expectedReturn } = this.props;
+
+    return (
+      <div className="bg-dark p-3">
+        <Form>
+          <Row>
+            <Col>
+              <Form.Group controlId="value">
+                <Form.Label className="text-white">Valor da Aposta</Form.Label>
+                <NumberFormat
+                  decimalSeparator=","
+                  customInput={Form.Control}
+                  value={value}
+                  prefix={'R$ '}
+                  displayType={'input'}
+                  fixedDecimalScale
+                  decimalScale={2}
+                  onValueChange={(values) => {
+                    const { formattedValue, value } = values;
+                    this.props.setBetValue(value);
+                  }}
+                />
+              </Form.Group>
+            </Col>
+
+            <Col>
+              <Form.Group controlId="expectedReturn">
+                <Form.Label className="text-white">Possível Retorno</Form.Label>
+                <div
+                  className="border border-white rounded ps-2"
+                  style={{ height: '33px', lineHeight: '33px' }}
+                >
+                  <NumberFormat
+                    decimalSeparator=","
+                    value={expectedReturn}
+                    prefix={'R$ '}
+                    displayType={'text'}
+                    fixedDecimalScale
+                    decimalScale={2}
+                    className="text-white"
+                  />
+                </div>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <Form.Group controlId="name" className="mt-2">
+                <Form.Label className="text-white">Seu Nome</Form.Label>
+                <Form.Control type="text" />
+              </Form.Group>
+            </Col>
+
+            <Col className="d-flex justify-content-center">
+              <Button
+                size="lg"
+                className="align-self-end text-white"
+                variant="success"
+                onClick={() => this.placeBet()}
+              >
+                Enviar
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+      </div>
+    );
+  }
+
   render() {
-    const { value, expectedReturn, options } = this.props;
+    const { options } = this.props;
 
     return (
       <>
@@ -54,73 +144,7 @@ class BetSummaryContainer extends React.Component {
 
         <hr />
 
-        <div className="bg-dark p-3">
-          <Form>
-            <Row>
-              <Col>
-                <Form.Group controlId="value">
-                  <Form.Label className="text-white">
-                    Valor da Aposta
-                  </Form.Label>
-                  <NumberFormat
-                    decimalSeparator=","
-                    customInput={Form.Control}
-                    value={value}
-                    prefix={'R$ '}
-                    displayType={'input'}
-                    fixedDecimalScale
-                    decimalScale={2}
-                    onValueChange={(values) => {
-                      const { formattedValue, value } = values;
-                      this.props.setBetValue(value);
-                    }}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col>
-                <Form.Group controlId="expectedReturn">
-                  <Form.Label className="text-white">
-                    Possível Retorno
-                  </Form.Label>
-                  <div
-                    className="border border-white rounded ps-2"
-                    style={{ height: '33px', lineHeight: '33px' }}
-                  >
-                    <NumberFormat
-                      decimalSeparator=","
-                      value={expectedReturn}
-                      prefix={'R$ '}
-                      displayType={'text'}
-                      fixedDecimalScale
-                      decimalScale={2}
-                      className="text-white"
-                    />
-                  </div>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col>
-                <Form.Group controlId="name" className="mt-2">
-                  <Form.Label className="text-white">Seu Nome</Form.Label>
-                  <Form.Control type="text" />
-                </Form.Group>
-              </Col>
-
-              <Col className="d-flex justify-content-center">
-                <Button
-                  className="align-self-end"
-                  variant="success"
-                  onClick={() => this.placeBet()}
-                >
-                  Enviar
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-        </div>
+        {this.renderFooter()}
       </>
     );
   }
@@ -131,6 +155,8 @@ const mapStateToProps = (state) => {
     value: state.bet.value,
     expectedReturn: state.bet.expectedReturn,
     options: state.bet.options,
+    loading: state.bet.loading,
+    code: state.bet.code,
   };
 };
 
@@ -142,7 +168,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+export default compose(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps)
 )(BetSummaryContainer);

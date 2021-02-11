@@ -34,6 +34,7 @@ export const PLACE_BET = 'PLACE_BET';
 export const PLACE_BET_LOADING = 'PLACE_BET_LOADING';
 export const PLACE_BET_SUCCESS = 'PLACE_BET_SUCCESS';
 export const PLACE_BET_ERROR = 'PLACE_BET_ERROR';
+export const CLEAR_BET_CODE = 'CLEAR_BET_CODE';
 
 export const OPEN_TOAST = 'OPEN_TOAST';
 export const CLOSE_TOAST = 'CLOSE_TOAST';
