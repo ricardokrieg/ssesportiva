@@ -11,7 +11,7 @@ import CurrentBet from '../components/CurrentBet';
 import Loading from '../components/Loading';
 import Error from '../components/Error';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
+import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 
 class GameContainer extends React.Component {
   componentDidMount() {
@@ -72,11 +72,11 @@ class GameContainer extends React.Component {
         <div className="px-3 position-relative" style={{ paddingTop: '54px' }}>
           <h3 className="text-center mt-3">{game.title}</h3>
           <span
-            className="position-absolute bottom-0 badge bg-secondary"
-            style={{ right: '10px' }}
+            className="position-absolute badge bg-secondary"
+            style={{ top: '50px', right: '20px' }}
           >
-            <FontAwesomeIcon icon={faClock} />
-            <span className="mx-1">{this.getHour(game)}</span>
+            <FontAwesomeIcon icon={faCalendar} />
+            <span className="mx-1">{game.date}</span>
           </span>
         </div>
 
