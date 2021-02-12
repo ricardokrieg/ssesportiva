@@ -5,9 +5,9 @@ import {
 } from '../actions/actionTypes';
 
 const initialState = {
-  ticket: null,
-  error: null,
+  data: null,
   loading: false,
+  error: null,
 };
 
 export default function ticketReducer(state = initialState, action) {
@@ -19,9 +19,9 @@ export default function ticketReducer(state = initialState, action) {
 
       return {
         ...state,
-        ticket,
-        error: null,
+        data: ticket,
         loading: false,
+        error: null,
       };
     case GET_TICKET_ERROR:
       const {
@@ -31,15 +31,15 @@ export default function ticketReducer(state = initialState, action) {
       return {
         ...state,
         error,
-        ticket: null,
+        data: null,
         loading: false,
       };
     case GET_TICKET_LOADING:
       return {
         ...state,
-        ticket: null,
-        error: null,
         loading: true,
+        data: null,
+        error: null,
       };
     default:
       return state;

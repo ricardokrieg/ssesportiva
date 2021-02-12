@@ -11,7 +11,7 @@ const initialState = {
   data: null,
   loading: false,
   error: null,
-  confirmed: false,
+  ticketCode: null,
   confirmLoading: false,
   confirmError: null,
 };
@@ -33,7 +33,7 @@ export default function pendingBetReducer(state = initialState, action) {
         data: pendingBet,
         loading: false,
         error: null,
-        confirmed: false,
+        ticketCode: null,
       };
     case GET_PENDING_BET_ERROR:
       const {
@@ -45,7 +45,7 @@ export default function pendingBetReducer(state = initialState, action) {
         data: null,
         loading: false,
         error,
-        confirmed: false,
+        ticketCode: null,
       };
     case CONFIRM_PENDING_BET_LOADING:
       return {
@@ -53,9 +53,13 @@ export default function pendingBetReducer(state = initialState, action) {
         confirmLoading: true,
       };
     case CONFIRM_PENDING_BET_SUCCESS:
+      const {
+        payload: { ticketCode },
+      } = action;
+
       return {
         ...state,
-        confirmed: true,
+        ticketCode,
         confirmLoading: false,
         confirmError: null,
         data: null,
@@ -63,7 +67,7 @@ export default function pendingBetReducer(state = initialState, action) {
     case CONFIRM_PENDING_BET_ERROR:
       return {
         ...state,
-        confirmed: false,
+        ticketCode: null,
         confirmLoading: false,
         confirmError: action.payload.error,
         data: null,

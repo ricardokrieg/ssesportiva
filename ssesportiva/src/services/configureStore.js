@@ -9,6 +9,7 @@ import rootSaga from '../sagas';
 const persistConfig = {
   key: 'root',
   storage,
+  whitelist: 'bet',
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);

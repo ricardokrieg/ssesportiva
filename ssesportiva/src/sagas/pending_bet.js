@@ -70,6 +70,7 @@ export function* confirmPendingBet({ payload: { code, name } }) {
 
     yield put({
       type: CONFIRM_PENDING_BET_SUCCESS,
+      payload: { ticketCode: data.ticketCode },
     });
   } catch (error) {
     yield put({

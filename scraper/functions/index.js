@@ -30,6 +30,7 @@ const menuCol = firestore.collection('menu');
 const championshipsCol = firestore.collection('championships');
 const gamesCol = firestore.collection('games');
 const betsCol = firestore.collection('bets');
+const ticketsCol = firestore.collection('bilhetes');
 const membersCol = firestore.collection('members');
 
 const runtimeOpts = {
@@ -377,6 +378,29 @@ async function generateBetCode() {
   do {
     code = randomCode();
   } while ((await betsCol.doc(String(code)).get()).exists)
+
+  return code;
+}
+
+function randomTicketCode() {
+  let code = _.sample('123456789ABCDEFGHJKMNPQRSTWXYZ');
+  while (code.length < 4) {
+    code += _.sample('123456789ABCDEFGHJKMNPQRSTWXYZ');
+  }
+  code += '-';
+  while (code.length < 9) {
+    code += _.sample('123456789ABCDEFGHJKMNPQRSTWXYZ');
+  }
+
+  return code;
+}
+
+async function generateTicketCode() {
+  let code;
+
+  do {
+    code = randomTicketCode();
+  } while ((await ticketsCol.doc(String(code)).get()).exists)
 
   return code;
 }
@@ -1058,6 +1082,17 @@ exports.confirmTicket = functions
 
       await docSnapshot.ref.update({ confirmedAt, confirmedBy, confirmedById });
 
+      const ticketCode = String(await generateTicketCode());
+      const ticketData = {
+        ...betData,
+        ticketCode,
+        ticketCreatedAt: admin.firestore.Timestamp.now()
+      };
+      await ticketsCol.doc(ticketCode).set(ticketData);
+
+      await docSnapshot.ref.update({ ticketCode });
+      betData['ticketCode'] = ticketCode;
+
       return betData;
     } catch (e) {
       console.error(e);
@@ -1228,6 +1263,30 @@ exports.getMemberDetails = functions
         total,
         status: member.blocked ? 'Aguardando ativação' : 'OK',
       };
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getTicket = functions
+  .https
+  .onCall(async (data, context) => {
+    try {
+      const id = data['id'];
+
+      if (!id || id.length === 0) {
+        return { error: "Por favor insira o código do bilhete" };
+      }
+
+      const docRef = ticketsCol.doc(id);
+      const docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        return { error: "Bilhete não encontrado" };
+      }
+
+      return docSnapshot.data();
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };

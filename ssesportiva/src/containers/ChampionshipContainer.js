@@ -46,6 +46,9 @@ class ChampionshipContainer extends React.Component {
     if (loading) return <Loading />;
     if (error) return <Error error={error} />;
 
+    // TODO find a fix for this. IMPORTANT!!!!
+    if (!championship) return <div></div>;
+
     return (
       <>
         <CurrentBet />

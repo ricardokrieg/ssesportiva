@@ -7,12 +7,12 @@ import Loading from '../components/Loading';
 import { compose } from 'redux';
 import { withRouter } from 'react-router';
 import { confirmPendingBet } from '../actions/pending_bet';
-import { isNull } from 'lodash';
+import { isNull, isEmpty } from 'lodash';
 
 class ConfirmBetContainer extends React.Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (!prevProps.confirmed && this.props.confirmed) {
-      this.props.history.replace('/confirmado');
+    if (isEmpty(prevProps.ticketCode) && !isEmpty(this.props.ticketCode)) {
+      this.props.history.replace(`/bilhete/${this.props.ticketCode}`);
     }
   }
 
@@ -142,7 +142,7 @@ class ConfirmBetContainer extends React.Component {
 const mapStateToProps = (state) => {
   return {
     pendingBet: state.pendingBet.data,
-    confirmed: state.pendingBet.confirmed,
+    ticketCode: state.pendingBet.ticketCode,
     loading: state.pendingBet.confirmLoading,
     error: state.pendingBet.confirmError,
   };
