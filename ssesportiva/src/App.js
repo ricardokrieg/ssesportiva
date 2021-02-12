@@ -10,7 +10,9 @@ import GameContainer from './containers/GameContainer';
 import BetSummaryContainer from './containers/BetSummaryContainer';
 import BetCodeContainer from './containers/BetCodeContainer';
 import TicketContainer from './containers/TicketContainer';
+import SearchBetContainer from './containers/SearchBetContainer';
 import ToastContainer from './components/ToastContainer';
+import { connect } from 'react-redux';
 
 const AppContainer = styled.div`
   padding-top: 54px;
@@ -18,9 +20,11 @@ const AppContainer = styled.div`
 
 class App extends Component {
   render() {
+    const { auth, user } = this.props;
+
     return (
       <AppContainer>
-        <Navigation />
+        <Navigation auth={auth} user={user} />
         <ToastContainer />
 
         <Route exact path="/" component={GroupListContainer} />
@@ -31,9 +35,17 @@ class App extends Component {
         <Route exact path="/sucesso" component={BetCodeContainer} />
         <Route exact path="/conferir-bilhete" component={TicketContainer} />
         <Route exact path="/conferir-bilhete/:id" component={TicketContainer} />
+        <Route exact path="/aprovar-aposta" component={SearchBetContainer} />
       </AppContainer>
     );
   }
 }
 
-export default App;
+const mapStateToProps = (state) => {
+  return {
+    auth: state.firebase.auth,
+    user: state.auth.user,
+  };
+};
+
+export default connect(mapStateToProps)(App);

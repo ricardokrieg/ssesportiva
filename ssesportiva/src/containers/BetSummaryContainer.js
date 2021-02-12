@@ -14,7 +14,7 @@ import { withRouter } from 'react-router';
 class BetSummaryContainer extends React.Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (isEmpty(prevProps.code) && !isEmpty(this.props.code)) {
-      this.props.history.push('/sucesso');
+      this.props.history.replace('/sucesso');
     }
   }
 

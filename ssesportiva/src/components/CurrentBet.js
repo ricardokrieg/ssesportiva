@@ -13,7 +13,7 @@ class CurrentBet extends React.Component {
     return (
       <div
         className="bg-dark py-2 px-1 d-flex justify-content-between fixed-top"
-        style={{ marginTop: '54px' }}
+        style={{ marginTop: '54px', zIndex: '1029' }}
       >
         <NumberFormat
           decimalSeparator=","

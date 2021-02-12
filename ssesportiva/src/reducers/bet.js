@@ -33,6 +33,8 @@ const calculateQuote = (options) => {
 };
 
 export default function betReducer(state = initialState, action) {
+  let quote, expectedReturn;
+
   switch (action.type) {
     case ADD_OPTION_SUCCESS:
     case REMOVE_OPTION_SUCCESS:
@@ -40,12 +42,13 @@ export default function betReducer(state = initialState, action) {
         payload: { options },
       } = action;
 
-      const quote = calculateQuote(options);
+      quote = calculateQuote(options);
+      expectedReturn = quote * state.value;
 
       return {
         ...state,
         quote,
-        expectedReturn: quote * state.value,
+        expectedReturn,
         options,
       };
     case SET_BET_VALUE:
@@ -53,10 +56,12 @@ export default function betReducer(state = initialState, action) {
         payload: { value },
       } = action;
 
+      expectedReturn = state.quote * value;
+
       return {
         ...state,
         value: parseFloat(value),
-        expectedReturn: state.quote * value,
+        expectedReturn,
       };
     case PLACE_BET_LOADING:
       return {
@@ -69,11 +74,17 @@ export default function betReducer(state = initialState, action) {
         payload: { code },
       } = action;
 
+      quote = 1.0;
+      expectedReturn = quote * state.value;
+
       return {
         ...state,
         loading: false,
         error: null,
         code,
+        options: [],
+        quote,
+        expectedReturn,
       };
     case PLACE_BET_ERROR:
       const {

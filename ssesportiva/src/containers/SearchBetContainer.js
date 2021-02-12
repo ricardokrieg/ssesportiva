@@ -1,30 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
-import { withRouter } from 'react-router';
-
-import { getTicket } from '../actions/ticket';
+import { getPendingBet } from '../actions/pending_bet';
 import Loading from '../components/Loading';
 import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
-class TicketContainer extends React.Component {
-  componentDidMount() {
-    const {
-      getTicket,
-      match: {
-        params: { id },
-      },
-    } = this.props;
-
-    if (id) {
-      getTicket(id);
-    }
-  }
-
+class SearchBetContainer extends React.Component {
   render() {
-    const { loading } = this.props;
+    const { loading, getPendingBet } = this.props;
 
     if (loading) return <Loading />;
 
@@ -37,12 +21,12 @@ class TicketContainer extends React.Component {
               if (!this.input.value.trim()) {
                 return;
               }
-              this.props.getTicket(this.input.value);
+              getPendingBet(this.input.value);
               this.input.value = '';
             }}
           >
             <Form.Group controlId="code" className="mt-2">
-              <Form.Label>Código do Bilhete</Form.Label>
+              <Form.Label>Código da Aposta</Form.Label>
               <Form.Control
                 ref={(node) => {
                   this.input = node;
@@ -69,18 +53,15 @@ class TicketContainer extends React.Component {
 
 const mapStateToProps = (state) => {
   return {
-    ticket: state.ticket.ticket,
-    loading: state.ticket.loading,
+    pendingBet: state.pendingBet.data,
+    loading: state.pendingBet.loading,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getTicket: (id) => dispatch(getTicket(id)),
+    getPendingBet: (code) => dispatch(getPendingBet(code)),
   };
 };
 
-export default compose(
-  withRouter,
-  connect(mapStateToProps, mapDispatchToProps)
-)(TicketContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(SearchBetContainer);

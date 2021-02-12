@@ -8,6 +8,7 @@ import gameReducer from './game';
 import betReducer from './bet';
 import toastReducer from './toast';
 import ticketReducer from './ticket';
+import pendingBetReducer from './pending_bet';
 
 export default combineReducers({
   firebase: firebaseReducer,
@@ -18,4 +19,5 @@ export default combineReducers({
   bet: betReducer,
   toast: toastReducer,
   ticket: ticketReducer,
+  pendingBet: pendingBetReducer,
 });

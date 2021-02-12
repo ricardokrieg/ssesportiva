@@ -10,7 +10,11 @@ import {
   PLACE_BET_SUCCESS,
   PLACE_BET_ERROR,
 } from '../actions/actionTypes';
-import { openSuccessToast, openErrorToast } from '../actions/toast';
+import {
+  openSuccessToast,
+  openErrorToast,
+  openDefaultErrorToast,
+} from '../actions/toast';
 import firebase from '../services/firebase';
 
 export const getValue = (state) => state.bet.value;
@@ -101,7 +105,7 @@ export function* placeBet() {
       type: PLACE_BET_ERROR,
       payload: { error },
     });
-    yield put(openErrorToast('', 'Aconteceu um erro'));
+    yield put(openDefaultErrorToast());
   }
 }
 

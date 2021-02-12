@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navbar, Nav, NavItem, Container } from 'react-bootstrap';
+import { Navbar, Nav, NavItem, NavDropdown, Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -8,8 +8,15 @@ import {
   faFileAlt,
   faKey,
 } from '@fortawesome/free-solid-svg-icons';
+import { isNull } from 'lodash';
+import PropTypes from 'prop-types';
+import User from './User';
 
-const Navigation = () => (
+const isValidUser = (auth, user) => {
+  return auth && !auth.isEmpty && !isNull(user);
+};
+
+const Navigation = ({ auth, user }) => (
   <Navbar expand="md" variant="dark" fixed="top">
     <Container fluid>
       <Navbar.Brand>
@@ -26,18 +33,32 @@ const Navigation = () => (
               <span className="mx-2">Futebol</span>
             </Link>
           </NavItem>
+
           <NavItem>
             <Link to="/conferir-bilhete" className="nav-link">
               <FontAwesomeIcon icon={faTicketAlt} />
               <span className="mx-2">Conferir Bilhete</span>
             </Link>
           </NavItem>
+
           <NavItem>
             <Link to="/regulamento" className="nav-link">
               <FontAwesomeIcon icon={faFileAlt} />
               <span className="mx-2">Regulamento</span>
             </Link>
           </NavItem>
+
+          <NavDropdown.Divider />
+
+          {isValidUser(auth, user) && (
+            <NavItem>
+              <Link to="/aprovar-aposta" className="nav-link">
+                <FontAwesomeIcon icon={faKey} />
+                <span className="mx-2">Aprovar Aposta</span>
+              </Link>
+            </NavItem>
+          )}
+
           <NavItem>
             <Link to="/acesso" className="nav-link">
               <FontAwesomeIcon icon={faKey} />
@@ -49,5 +70,10 @@ const Navigation = () => (
     </Container>
   </Navbar>
 );
+
+Navigation.propTypes = {
+  auth: PropTypes.object.isRequired,
+  user: PropTypes.object,
+};
 
 export default Navigation;

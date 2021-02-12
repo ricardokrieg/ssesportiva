@@ -12,6 +12,8 @@ import { watchAddOption, watchRemoveOption, watchPlaceBet } from './bet';
 
 import { watchGetTicket } from './ticket';
 
+import { watchGetPendingBet } from './pending_bet';
+
 export default function* rootSaga() {
   yield all([
     watchSignin(),
@@ -24,5 +26,6 @@ export default function* rootSaga() {
     watchRemoveOption(),
     watchPlaceBet(),
     watchGetTicket(),
+    watchGetPendingBet(),
   ]);
 }

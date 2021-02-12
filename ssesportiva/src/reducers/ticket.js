@@ -7,7 +7,7 @@ import {
 const initialState = {
   ticket: null,
   error: null,
-  loading: true,
+  loading: false,
 };
 
 export default function ticketReducer(state = initialState, action) {
