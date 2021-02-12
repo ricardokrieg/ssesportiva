@@ -52,7 +52,7 @@ const Navigation = ({ auth, user }) => (
 
           {isValidUser(auth, user) && (
             <NavItem>
-              <Link to="/aprovar-aposta" className="nav-link">
+              <Link to="/buscar-aposta" className="nav-link">
                 <FontAwesomeIcon icon={faKey} />
                 <span className="mx-2">Aprovar Aposta</span>
               </Link>

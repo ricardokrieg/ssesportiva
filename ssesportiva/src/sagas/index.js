@@ -12,7 +12,7 @@ import { watchAddOption, watchRemoveOption, watchPlaceBet } from './bet';
 
 import { watchGetTicket } from './ticket';
 
-import { watchGetPendingBet } from './pending_bet';
+import { watchGetPendingBet, watchConfirmPendingBet } from './pending_bet';
 
 export default function* rootSaga() {
   yield all([
@@ -27,5 +27,6 @@ export default function* rootSaga() {
     watchPlaceBet(),
     watchGetTicket(),
     watchGetPendingBet(),
+    watchConfirmPendingBet(),
   ]);
 }

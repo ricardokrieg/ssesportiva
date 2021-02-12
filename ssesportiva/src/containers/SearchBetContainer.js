@@ -5,8 +5,17 @@ import Loading from '../components/Loading';
 import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { compose } from 'redux';
+import { withRouter } from 'react-router';
+import { isNull } from 'lodash';
 
 class SearchBetContainer extends React.Component {
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (isNull(prevProps.pendingBet) && !isNull(this.props.pendingBet)) {
+      this.props.history.push('/aprovar-aposta');
+    }
+  }
+
   render() {
     const { loading, getPendingBet } = this.props;
 
@@ -64,4 +73,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SearchBetContainer);
+export default compose(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps)
+)(SearchBetContainer);

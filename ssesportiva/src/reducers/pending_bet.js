@@ -1,15 +1,19 @@
-import { reduce } from 'lodash';
-
 import {
   GET_PENDING_BET_LOADING,
   GET_PENDING_BET_SUCCESS,
   GET_PENDING_BET_ERROR,
+  CONFIRM_PENDING_BET_LOADING,
+  CONFIRM_PENDING_BET_SUCCESS,
+  CONFIRM_PENDING_BET_ERROR,
 } from '../actions/actionTypes';
 
 const initialState = {
   data: null,
   loading: false,
   error: null,
+  confirmed: false,
+  confirmLoading: false,
+  confirmError: null,
 };
 
 export default function pendingBetReducer(state = initialState, action) {
@@ -29,6 +33,7 @@ export default function pendingBetReducer(state = initialState, action) {
         data: pendingBet,
         loading: false,
         error: null,
+        confirmed: false,
       };
     case GET_PENDING_BET_ERROR:
       const {
@@ -40,6 +45,28 @@ export default function pendingBetReducer(state = initialState, action) {
         data: null,
         loading: false,
         error,
+        confirmed: false,
+      };
+    case CONFIRM_PENDING_BET_LOADING:
+      return {
+        ...state,
+        confirmLoading: true,
+      };
+    case CONFIRM_PENDING_BET_SUCCESS:
+      return {
+        ...state,
+        confirmed: true,
+        confirmLoading: false,
+        confirmError: null,
+        data: null,
+      };
+    case CONFIRM_PENDING_BET_ERROR:
+      return {
+        ...state,
+        confirmed: false,
+        confirmLoading: false,
+        confirmError: action.payload.error,
+        data: null,
       };
     default:
       return state;

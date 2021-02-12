@@ -11,6 +11,7 @@ import BetSummaryContainer from './containers/BetSummaryContainer';
 import BetCodeContainer from './containers/BetCodeContainer';
 import TicketContainer from './containers/TicketContainer';
 import SearchBetContainer from './containers/SearchBetContainer';
+import ConfirmBetContainer from './containers/ConfirmBetContainer';
 import ToastContainer from './components/ToastContainer';
 import { connect } from 'react-redux';
 
@@ -35,7 +36,9 @@ class App extends Component {
         <Route exact path="/sucesso" component={BetCodeContainer} />
         <Route exact path="/conferir-bilhete" component={TicketContainer} />
         <Route exact path="/conferir-bilhete/:id" component={TicketContainer} />
-        <Route exact path="/aprovar-aposta" component={SearchBetContainer} />
+        <Route exact path="/buscar-aposta" component={SearchBetContainer} />
+        <Route exact path="/aprovar-aposta" component={ConfirmBetContainer} />
+        <Route exact path="/confirmado" component={TicketContainer} />
       </AppContainer>
     );
   }
