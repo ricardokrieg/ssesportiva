@@ -6,7 +6,6 @@ import {
   faChevronDown,
   faChevronCircleUp,
 } from '@fortawesome/free-solid-svg-icons';
-import moment from 'moment';
 
 import { getGroups } from '../actions/groups';
 import {
@@ -21,8 +20,6 @@ import Error from '../components/Error';
 const Group = styled.div``;
 
 const Championships = styled.div``;
-
-const Championship = styled.div``;
 
 const Toggle = ({ children, eventKey, callback }) => {
   const currentEventKey = useContext(AccordionContext);
@@ -48,13 +45,22 @@ const Toggle = ({ children, eventKey, callback }) => {
 };
 
 class GroupListContainer extends React.Component {
-  componentDidMount() {
-    const { loadedAt, getGroups } = this.props;
+  constructor(props) {
+    super(props);
 
-    const tenMinutes = 10 * 60 * 1000;
-    if (!loadedAt || moment().diff(loadedAt) > tenMinutes) {
-      getGroups();
-    }
+    this.state = {
+      ready: false,
+    };
+  }
+
+  componentDidMount() {
+    const { getGroups } = this.props;
+
+    this.setState({ ready: false });
+
+    getGroups(() => {
+      this.setState({ ready: true });
+    });
   }
 
   getChampionshipNames(group) {
@@ -64,7 +70,7 @@ class GroupListContainer extends React.Component {
   render() {
     const { loading, error, groups } = this.props;
 
-    if (loading) return <Loading />;
+    if (!this.state.ready || loading) return <Loading />;
     if (error) return <Error error={error} />;
 
     return (
@@ -99,13 +105,12 @@ const mapStateToProps = (state) => {
     groups: state.groups.data,
     error: state.groups.error,
     loading: state.groups.loading,
-    loadedAt: state.groups.loadedAt,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getGroups: () => dispatch(getGroups()),
+    getGroups: (callback) => dispatch(getGroups(), callback()),
   };
 };
 

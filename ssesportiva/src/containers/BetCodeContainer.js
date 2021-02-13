@@ -2,15 +2,34 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp } from '@fortawesome/free-solid-svg-icons';
-import Error from '../components/Error';
 import { isEmpty } from 'lodash';
+import Loading from '../components/Loading';
+import { compose } from 'redux';
+import { withRouter } from 'react-router';
 
 class BetCodeContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      ready: false,
+    };
+  }
+
+  componentDidMount() {
+    const { code } = this.props;
+
+    if (!code || isEmpty(code)) {
+      this.props.history.replace('/');
+    } else {
+      this.setState({ ready: true });
+    }
+  }
+
   render() {
     const { code } = this.props;
 
-    if (!code || isEmpty(code))
-      return <Error error={'Código não encontrado'} />;
+    if (!this.state.ready) return <Loading />;
 
     return (
       <div className="bg-success text-white vh-100 text-center p-5">
@@ -36,8 +55,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {};
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(BetCodeContainer);
+export default compose(withRouter, connect(mapStateToProps))(BetCodeContainer);

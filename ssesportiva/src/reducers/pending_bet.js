@@ -1,4 +1,5 @@
 import {
+  CLEAR_PENDING_BET,
   GET_PENDING_BET_LOADING,
   GET_PENDING_BET_SUCCESS,
   GET_PENDING_BET_ERROR,
@@ -18,6 +19,10 @@ const initialState = {
 
 export default function pendingBetReducer(state = initialState, action) {
   switch (action.type) {
+    case CLEAR_PENDING_BET:
+      return {
+        ...initialState,
+      };
     case GET_PENDING_BET_LOADING:
       return {
         ...state,
@@ -70,7 +75,6 @@ export default function pendingBetReducer(state = initialState, action) {
         ticketCode: null,
         confirmLoading: false,
         confirmError: action.payload.error,
-        data: null,
       };
     default:
       return state;

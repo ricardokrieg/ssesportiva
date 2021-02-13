@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { withRouter } from 'react-router';
-import { getTicket } from '../actions/ticket';
+import { getTicket, clearTicket } from '../actions/ticket';
 import Loading from '../components/Loading';
 import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,16 +11,34 @@ import { isNull } from 'lodash';
 import Error from '../components/Error';
 
 class SearchTicketContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      ready: false,
+    };
+  }
+
+  componentDidMount() {
+    const { clearTicket } = this.props;
+
+    this.setState({ ready: false });
+
+    clearTicket(() => {
+      this.setState({ ready: true });
+    });
+  }
+
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (isNull(prevProps.ticket) && !isNull(this.props.ticket)) {
-      this.props.history.replace(`/bilhete/${this.props.ticket.ticketCode}`);
+      this.props.history.push(`/bilhete/${this.props.ticket.ticketCode}`);
     }
   }
 
   render() {
     const { loading, error } = this.props;
 
-    if (loading) return <Loading />;
+    if (!this.state.ready || loading) return <Loading />;
     if (error) return <Error error={error} />;
 
     return (
@@ -73,6 +91,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     getTicket: (id) => dispatch(getTicket(id)),
+    clearTicket: (callback) => dispatch(clearTicket(), callback()),
   };
 };
 

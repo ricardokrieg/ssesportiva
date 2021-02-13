@@ -9,7 +9,6 @@ import {
 const initialState = {
   data: [],
   loading: false,
-  loadedAt: null,
   error: null,
 };
 
@@ -30,7 +29,6 @@ export default function groupsReducer(state = initialState, action) {
         data: groups,
         error: null,
         loading: false,
-        loadedAt: moment(),
       };
     case GET_GROUPS_ERROR:
       const {
@@ -42,7 +40,6 @@ export default function groupsReducer(state = initialState, action) {
         data: [],
         error,
         loading: false,
-        loadedAt: null,
       };
     default:
       return state;

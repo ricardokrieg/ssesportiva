@@ -7,7 +7,7 @@ import {
   PLACE_BET_LOADING,
   PLACE_BET_SUCCESS,
   PLACE_BET_ERROR,
-  CLEAR_BET_CODE,
+  CLEAR_BET,
 } from '../actions/actionTypes';
 
 const initialState = {
@@ -16,7 +16,7 @@ const initialState = {
   expectedReturn: 0.0,
   options: [],
   error: null,
-  loading: true,
+  loading: false,
   code: '',
 };
 
@@ -97,10 +97,11 @@ export default function betReducer(state = initialState, action) {
         code: '',
         error,
       };
-    case CLEAR_BET_CODE:
+    case CLEAR_BET:
       return {
         ...state,
         code: '',
+        loading: false,
       };
     default:
       return state;

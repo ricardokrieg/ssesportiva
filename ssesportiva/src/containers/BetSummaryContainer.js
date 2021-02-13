@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Button, Col, Row } from 'react-bootstrap';
-import { removeOption, setBetValue, placeBet } from '../actions/bet';
+import { removeOption, setBetValue, placeBet, clearBet } from '../actions/bet';
 import NumberFormat from 'react-number-format';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -12,6 +12,10 @@ import { compose } from 'redux';
 import { withRouter } from 'react-router';
 
 class BetSummaryContainer extends React.Component {
+  componentDidMount() {
+    this.props.clearBet();
+  }
+
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (isEmpty(prevProps.code) && !isEmpty(this.props.code)) {
       this.props.history.replace('/sucesso');
@@ -165,6 +169,7 @@ const mapDispatchToProps = (dispatch) => {
     removeOption: (option) => dispatch(removeOption(option)),
     setBetValue: (value) => dispatch(setBetValue(value)),
     placeBet: () => dispatch(placeBet()),
+    clearBet: () => dispatch(clearBet()),
   };
 };
 

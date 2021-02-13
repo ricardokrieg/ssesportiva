@@ -14,6 +14,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 
 class GameContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      ready: false,
+    };
+  }
+
   componentDidMount() {
     const {
       getGame,
@@ -22,7 +30,9 @@ class GameContainer extends React.Component {
       },
     } = this.props;
 
-    getGame(id);
+    getGame(id, () => {
+      this.setState({ ready: true });
+    });
   }
 
   handleOptionClick(game, quote, option) {
@@ -62,7 +72,7 @@ class GameContainer extends React.Component {
   render() {
     const { loading, error, game } = this.props;
 
-    if (loading) return <Loading />;
+    if (!this.state.ready || loading) return <Loading />;
     if (error) return <Error error={error} />;
 
     return (
@@ -121,7 +131,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getGame: (id) => dispatch(getGame(id)),
+    getGame: (id, callback) => dispatch(getGame(id), callback()),
     addOption: (championship, game, quote, option) =>
       dispatch(addOption(championship, game, quote, option)),
     removeOption: (option) => dispatch(removeOption(option)),

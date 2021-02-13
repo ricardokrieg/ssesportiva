@@ -6,35 +6,61 @@ import Form from 'react-bootstrap/Form';
 import Loading from '../components/Loading';
 import { compose } from 'redux';
 import { withRouter } from 'react-router';
-import { confirmPendingBet } from '../actions/pending_bet';
+import { confirmPendingBet, getPendingBet } from '../actions/pending_bet';
 import { isNull, isEmpty } from 'lodash';
 
 class ConfirmBetContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      ready: false,
+    };
+  }
+
+  componentDidMount() {
+    const {
+      getPendingBet,
+      match: {
+        params: { id },
+      },
+    } = this.props;
+
+    getPendingBet(id, () => {
+      this.setState({ ready: true });
+    });
+  }
+
   componentDidUpdate(prevProps, prevState, snapshot) {
+    if (isEmpty(prevProps.pendingBet) && !isEmpty(this.props.pendingBet)) {
+      if (!isEmpty(this.props.pendingBet.ticketCode)) {
+        this.props.history.replace(
+          `/bilhete/${this.props.pendingBet.ticketCode}`
+        );
+        return;
+      }
+    }
+
     if (isEmpty(prevProps.ticketCode) && !isEmpty(this.props.ticketCode)) {
       this.props.history.replace(`/bilhete/${this.props.ticketCode}`);
     }
   }
 
   confirmPendingBet() {
-    const { pendingBet } = this.props;
+    const { confirmPendingBet, pendingBet } = this.props;
 
-    this.props.confirmPendingBet(pendingBet.code, 'Teste');
+    confirmPendingBet(pendingBet.code, 'Teste');
   }
 
   renderFooter() {
     const { pendingBet, loading } = this.props;
 
-    if (loading) {
+    if (!this.state.ready || loading) {
       return (
         <div className="bg-dark py-3">
           <Loading height="100%" />
         </div>
       );
-    }
-
-    if (isNull(pendingBet)) {
-      return <div></div>;
     }
 
     return (
@@ -151,6 +177,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     confirmPendingBet: (name) => dispatch(confirmPendingBet(name)),
+    getPendingBet: (id, callback) => dispatch(getPendingBet(id), callback()),
   };
 };
 

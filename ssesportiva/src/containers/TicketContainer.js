@@ -15,6 +15,14 @@ const fontFamily =
   'Montserrat, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
 
 class TicketContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      ready: false,
+    };
+  }
+
   componentDidMount() {
     const {
       getTicket,
@@ -23,9 +31,9 @@ class TicketContainer extends React.Component {
       },
     } = this.props;
 
-    if (id) {
-      getTicket(id);
-    }
+    getTicket(id, () => {
+      this.setState({ ready: true });
+    });
   }
 
   renderHeader() {
@@ -86,12 +94,8 @@ class TicketContainer extends React.Component {
   render() {
     const { loading, error, ticket } = this.props;
 
-    if (loading) return <Loading />;
+    if (!this.state.ready || loading) return <Loading />;
     if (error) return <Error error={error} />;
-
-    if (isNull(ticket)) {
-      return <Error error={'Ocorreu um erro'} />;
-    }
 
     return (
       <>
@@ -134,7 +138,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getTicket: (id) => dispatch(getTicket(id)),
+    getTicket: (id, callback) => dispatch(getTicket(id), callback()),
   };
 };
 

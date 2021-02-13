@@ -10,7 +10,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { isNull } from 'lodash';
 import PropTypes from 'prop-types';
-import User from './User';
 
 const isValidUser = (auth, user) => {
   return auth && !auth.isEmpty && !isNull(user);

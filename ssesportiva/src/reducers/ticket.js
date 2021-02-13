@@ -1,4 +1,5 @@
 import {
+  CLEAR_TICKET,
   GET_TICKET_LOADING,
   GET_TICKET_SUCCESS,
   GET_TICKET_ERROR,
@@ -12,6 +13,10 @@ const initialState = {
 
 export default function ticketReducer(state = initialState, action) {
   switch (action.type) {
+    case CLEAR_TICKET:
+      return {
+        ...initialState,
+      };
     case GET_TICKET_SUCCESS:
       const {
         payload: { ticket },

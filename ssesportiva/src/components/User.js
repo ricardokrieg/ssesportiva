@@ -1,23 +1,87 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { isNull } from 'lodash';
+import NumberFormat from 'react-number-format';
+import Loading from './Loading';
 
-const User = ({ auth, user, error }) => {
+const User = ({ auth, user }) => {
   if (auth.isEmpty) return null;
+  if (isNull(user)) return <Loading />;
 
-  if (error) return <div>{error.message}</div>;
-
-  // TODO loading
-  if (isNull(user)) return <div></div>;
+  const userStatus = (status) => {
+    if (status.toLowerCase() === 'ok') {
+      return <span className="badge text-white bg-primary">OK</span>;
+    } else {
+      return <span className="text-warning">{status}</span>;
+    }
+  };
 
   return (
-    <div>
-      <div>{auth.email}</div>
-      <div>{user.status}</div>
-      <div>{user.in}</div>
-      <div>{user.out}</div>
-      <div>{user.commission}</div>
-      <div>{user.total}</div>
+    <div className="border rounded p-3">
+      <h3 className="text-center">{auth.email}</h3>
+
+      <hr />
+
+      <table className="table">
+        <tbody>
+          <tr>
+            <td>Status</td>
+            <td>{userStatus(user.status)}</td>
+          </tr>
+          <tr>
+            <td>Entradas</td>
+            <td>
+              <NumberFormat
+                decimalSeparator=","
+                value={user.in / 100}
+                prefix={'R$ '}
+                displayType={'text'}
+                fixedDecimalScale
+                decimalScale={2}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Saídas</td>
+            <td>
+              <NumberFormat
+                decimalSeparator=","
+                value={user.out / 100}
+                prefix={'R$ '}
+                displayType={'text'}
+                fixedDecimalScale
+                decimalScale={2}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Comissão</td>
+            <td>
+              <NumberFormat
+                decimalSeparator=","
+                value={user.commission / 100}
+                prefix={'R$ '}
+                displayType={'text'}
+                fixedDecimalScale
+                decimalScale={2}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td>
+              <NumberFormat
+                decimalSeparator=","
+                value={user.total / 100}
+                prefix={'R$ '}
+                displayType={'text'}
+                fixedDecimalScale
+                decimalScale={2}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };
@@ -25,7 +89,6 @@ const User = ({ auth, user, error }) => {
 User.propTypes = {
   auth: PropTypes.object.isRequired,
   user: PropTypes.object,
-  error: PropTypes.object,
 };
 
 export default User;

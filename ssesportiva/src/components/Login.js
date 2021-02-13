@@ -1,9 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { signin } from '../actions/auth';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
+import { Button, Form, InputGroup } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faKey } from '@fortawesome/free-solid-svg-icons';
 
 let Login = ({ dispatch }) => {
   let email, password;
@@ -21,7 +21,7 @@ let Login = ({ dispatch }) => {
       }}
     >
       <Form.Group controlId="formBasicEmail">
-        <InputGroup>
+        <InputGroup className="mb-3">
           <Form.Control
             type="email"
             placeholder="Email"
@@ -29,6 +29,9 @@ let Login = ({ dispatch }) => {
               email = node;
             }}
           />
+        </InputGroup>
+
+        <InputGroup className="mb-3">
           <Form.Control
             type="password"
             placeholder="Password"
@@ -36,10 +39,14 @@ let Login = ({ dispatch }) => {
               password = node;
             }}
           />
-          <InputGroup.Append>
-            <Button type="submit">Entrar</Button>
-          </InputGroup.Append>
         </InputGroup>
+
+        <div className="text-center">
+          <Button size="lg" type="submit">
+            <FontAwesomeIcon icon={faKey} />
+            <span className="ms-2">Entrar</span>
+          </Button>
+        </div>
       </Form.Group>
     </Form>
   );

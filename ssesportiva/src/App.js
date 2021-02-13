@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 import Navigation from './components/Navigation';
 import MemberContainer from './containers/MemberContainer';
+import RulesContainer from './containers/RulesContainer';
 import GroupListContainer from './containers/GroupListContainer';
 import ChampionshipContainer from './containers/ChampionshipContainer';
 import GameContainer from './containers/GameContainer';
@@ -30,7 +31,7 @@ class App extends Component {
         <ToastContainer />
 
         <Route exact path="/" component={GroupListContainer} />
-        <Route exact path="/acesso" component={MemberContainer} />
+        <Route exact path="/regulamento" component={RulesContainer} />
         <Route exact path="/campeonato/:id" component={ChampionshipContainer} />
         <Route exact path="/jogo/:id" component={GameContainer} />
         <Route exact path="/finalizar" component={BetSummaryContainer} />
@@ -40,9 +41,10 @@ class App extends Component {
           path="/conferir-bilhete"
           component={SearchTicketContainer}
         />
-        <Route exact path="/buscar-aposta" component={SearchBetContainer} />
-        <Route exact path="/aprovar-aposta" component={ConfirmBetContainer} />
         <Route exact path="/bilhete/:id" component={TicketContainer} />
+        <Route exact path="/acesso" component={MemberContainer} />
+        <Route exact path="/buscar-aposta" component={SearchBetContainer} />
+        <Route exact path="/aposta/:id" component={ConfirmBetContainer} />
       </AppContainer>
     );
   }

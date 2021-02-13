@@ -13,6 +13,14 @@ import Loading from '../components/Loading';
 import Error from '../components/Error';
 
 class ChampionshipContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      ready: false,
+    };
+  }
+
   componentDidMount() {
     const {
       getChampionship,
@@ -21,7 +29,9 @@ class ChampionshipContainer extends React.Component {
       },
     } = this.props;
 
-    getChampionship(id);
+    getChampionship(id, () => {
+      this.setState({ ready: true });
+    });
   }
 
   handleOptionClick(championship, game, quote, option) {
@@ -43,11 +53,8 @@ class ChampionshipContainer extends React.Component {
   render() {
     const { loading, error, championship } = this.props;
 
-    if (loading) return <Loading />;
+    if (!this.state.ready || loading) return <Loading />;
     if (error) return <Error error={error} />;
-
-    // TODO find a fix for this. IMPORTANT!!!!
-    if (!championship) return <div></div>;
 
     return (
       <>
@@ -116,7 +123,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getChampionship: (id) => dispatch(getChampionship(id)),
+    getChampionship: (id, callback) =>
+      dispatch(getChampionship(id), callback()),
     addOption: (championship, game, quote, option) =>
       dispatch(addOption(championship, game, quote, option)),
     removeOption: (option) => dispatch(removeOption(option)),

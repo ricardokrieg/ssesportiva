@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { getPendingBet } from '../actions/pending_bet';
+import { getPendingBet, clearPendingBet } from '../actions/pending_bet';
 import Loading from '../components/Loading';
 import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,16 +10,34 @@ import { withRouter } from 'react-router';
 import { isNull } from 'lodash';
 
 class SearchBetContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      ready: false,
+    };
+  }
+
+  componentDidMount() {
+    const { clearPendingBet } = this.props;
+
+    this.setState({ ready: false });
+
+    clearPendingBet(() => {
+      this.setState({ ready: true });
+    });
+  }
+
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (isNull(prevProps.pendingBet) && !isNull(this.props.pendingBet)) {
-      this.props.history.push('/aprovar-aposta');
+      this.props.history.push(`/aposta/${this.props.pendingBet.code}`);
     }
   }
 
   render() {
     const { loading, getPendingBet } = this.props;
 
-    if (loading) return <Loading />;
+    if (!this.state.ready || loading) return <Loading />;
 
     return (
       <div className="d-flex justify-content-center">
@@ -70,6 +88,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     getPendingBet: (code) => dispatch(getPendingBet(code)),
+    clearPendingBet: (callback) => dispatch(clearPendingBet(), callback()),
   };
 };
 
