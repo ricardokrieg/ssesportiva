@@ -6,7 +6,6 @@ import {
   faChevronDown,
   faChevronCircleUp,
 } from '@fortawesome/free-solid-svg-icons';
-
 import { getGroups } from '../actions/groups';
 import {
   Accordion,
@@ -16,6 +15,16 @@ import {
 import { Link } from 'react-router-dom';
 import Loading from '../components/Loading';
 import Error from '../components/Error';
+import { concat } from 'lodash';
+import moment from 'moment';
+
+const getWeekDay = (date) => {
+  const weekDay = moment(date).day();
+
+  return ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][
+    weekDay
+  ];
+};
 
 const Group = styled.div``;
 
@@ -60,11 +69,41 @@ class GroupListContainer extends React.Component {
 
     getGroups(() => {
       this.setState({ ready: true });
+      this.setDayGames();
     });
+  }
+
+  setDayGames() {
+    const championships = [
+      { title: getWeekDay(moment()), date: moment().format('YYYY-MM-DD') },
+      {
+        title: getWeekDay(moment().add(1, 'day')),
+        date: moment().add(1, 'day').format('YYYY-MM-DD'),
+      },
+      {
+        title: getWeekDay(moment().add(2, 'day')),
+        date: moment().add(2, 'day').format('YYYY-MM-DD'),
+      },
+    ];
+    const dayGames = [
+      {
+        name: 'Jogos do Dia',
+        championships,
+      },
+    ];
+
+    this.setState({ dayGames });
   }
 
   getChampionshipNames(group) {
     return group.championships.map((c) => c.title).join(', ');
+  }
+
+  getChampionshipLink(championship) {
+    if (championship.id) return '/campeonato/' + championship.id;
+    if (championship.date) return '/jogos-por-data/' + championship.date;
+
+    return null;
   }
 
   render() {
@@ -75,7 +114,7 @@ class GroupListContainer extends React.Component {
 
     return (
       <Accordion className="mt-3">
-        {groups.map((group, index) => (
+        {concat(this.state.dayGames, groups).map((group, index) => (
           <Group className="mx-1 mb-2 border rounded" key={index + 1}>
             <Toggle eventKey={index + 1}>{group.name}</Toggle>
 
@@ -84,7 +123,7 @@ class GroupListContainer extends React.Component {
                 {group.championships.map((championship, championshipIndex) => (
                   <Link
                     key={index + '-' + championshipIndex}
-                    to={'/campeonato/' + championship.id}
+                    to={this.getChampionshipLink(championship)}
                   >
                     <div className="shadow-sm p-3 mb-2 bg-white rounded">
                       {championship.title}
