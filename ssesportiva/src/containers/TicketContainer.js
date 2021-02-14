@@ -139,6 +139,7 @@ class TicketContainer extends React.Component {
 
     if (!this.state.ready || loading) return <Loading />;
     if (error) return <Error error={error} />;
+    if (!ticket) return <Loading />;
 
     return (
       <>

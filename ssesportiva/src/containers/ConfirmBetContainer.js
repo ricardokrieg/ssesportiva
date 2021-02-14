@@ -33,7 +33,7 @@ class ConfirmBetContainer extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (isEmpty(prevProps.pendingBet) && !isEmpty(this.props.pendingBet)) {
+    if (isNull(prevProps.pendingBet) && !isNull(this.props.pendingBet)) {
       if (!isEmpty(this.props.pendingBet.ticketCode)) {
         this.props.history.replace(
           `/bilhete/${this.props.pendingBet.ticketCode}`
