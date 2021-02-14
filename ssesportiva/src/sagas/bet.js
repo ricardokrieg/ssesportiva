@@ -10,11 +10,7 @@ import {
   PLACE_BET_SUCCESS,
   PLACE_BET_ERROR,
 } from '../actions/actionTypes';
-import {
-  openSuccessToast,
-  openErrorToast,
-  openDefaultErrorToast,
-} from '../actions/toast';
+import { openErrorToast, openDefaultErrorToast } from '../actions/toast';
 import firebase from '../services/firebase';
 
 export const getValue = (state) => state.bet.value;

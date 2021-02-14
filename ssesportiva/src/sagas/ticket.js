@@ -26,7 +26,7 @@ export function* getTicket({ payload: { id } }) {
         type: GET_TICKET_ERROR,
         payload: { error },
       });
-      yield put(openErrorToast(error.message));
+      yield put(openErrorToast('Erro', error.message));
       return;
     }
 

@@ -8,7 +8,6 @@ import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { isNull } from 'lodash';
-import Error from '../components/Error';
 
 class SearchTicketContainer extends React.Component {
   constructor(props) {
@@ -36,10 +35,9 @@ class SearchTicketContainer extends React.Component {
   }
 
   render() {
-    const { loading, error } = this.props;
+    const { loading } = this.props;
 
     if (!this.state.ready || loading) return <Loading />;
-    if (error) return <Error error={error} />;
 
     return (
       <div className="d-flex justify-content-center">
@@ -57,6 +55,9 @@ class SearchTicketContainer extends React.Component {
             <Form.Group controlId="code" className="mt-2">
               <Form.Label>Código do Bilhete</Form.Label>
               <Form.Control
+                onChange={() => {
+                  this.input.value = this.input.value.toUpperCase();
+                }}
                 ref={(node) => {
                   this.input = node;
                 }}
@@ -84,7 +85,6 @@ const mapStateToProps = (state) => {
   return {
     ticket: state.ticket.data,
     loading: state.ticket.loading,
-    error: state.ticket.error,
   };
 };
 
