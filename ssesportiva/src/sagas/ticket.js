@@ -16,7 +16,7 @@ export function* getTicket({ payload: { id } }) {
 
   try {
     const response = yield firebase.functions().httpsCallable('getTicket')({
-      id,
+      id: id.toUpperCase(),
     });
     const { data } = response;
 

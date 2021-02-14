@@ -8,6 +8,8 @@ import { getTicket, setTicketResult } from '../actions/ticket';
 import Error from '../components/Error';
 import moment from 'moment';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faWhatsapp } from '@fortawesome/fontawesome-free-brands';
 
 const fontFamily =
   'Montserrat, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
@@ -39,6 +41,28 @@ class TicketContainer extends React.Component {
     if (result === 'loss') return 'Perdeu';
 
     return null;
+  }
+
+  renderShare() {
+    const { ticket } = this.props;
+
+    const ticketUrl = `https://ssesportiva.club/bilhete/${ticket.ticketCode}`;
+    const encodedURL = encodeURIComponent(ticketUrl);
+    const text = `Link para seu bilhete:%0a%0a${encodedURL}`;
+    const url = `whatsapp://send?text=${text}`;
+
+    return (
+      <div className="d-flex justify-content-end mx-3 mt-1">
+        <a
+          className="btn btn-success btn-lg text-white"
+          href={url}
+          target="_blank"
+        >
+          <FontAwesomeIcon icon={faWhatsapp} />
+          <span className="ms-2">WhatsApp</span>
+        </a>
+      </div>
+    );
   }
 
   renderSetResult() {
@@ -143,6 +167,8 @@ class TicketContainer extends React.Component {
 
     return (
       <>
+        {this.renderShare()}
+
         <div
           className="m-3 border border-dark"
           style={{ backgroundColor: '#F8ECC2', fontFamily }}
