@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Navbar, Nav, NavItem, NavDropdown, Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,70 +9,128 @@ import {
   faKey,
 } from '@fortawesome/free-solid-svg-icons';
 import { isNull } from 'lodash';
-import PropTypes from 'prop-types';
 
 const isValidUser = (auth, user) => {
   return auth && !auth.isEmpty && !isNull(user);
 };
 
-const Navigation = ({ auth, user }) => (
-  <Navbar expand="md" variant="dark" fixed="top">
-    <Container fluid>
-      <Navbar.Brand>
-        <Link to="/">
-          <img src="/logo.png" height="27" alt="SS eSportiva" />
-        </Link>
-      </Navbar.Brand>
-      <Navbar.Toggle aria-controls="basic-navbar-nav" />
-      <Navbar.Collapse id="basic-navbar-nav">
-        <Nav>
-          <NavItem>
-            <Link to="/" className="nav-link">
-              <FontAwesomeIcon icon={faFutbol} />
-              <span className="mx-2">Futebol</span>
-            </Link>
-          </NavItem>
+class Navigation extends Component {
+  constructor(props) {
+    super(props);
 
-          <NavItem>
-            <Link to="/conferir-bilhete" className="nav-link">
-              <FontAwesomeIcon icon={faTicketAlt} />
-              <span className="mx-2">Conferir Bilhete</span>
-            </Link>
-          </NavItem>
+    this.state = {
+      expanded: false,
+    };
 
-          <NavItem>
-            <Link to="/regulamento" className="nav-link">
-              <FontAwesomeIcon icon={faFileAlt} />
-              <span className="mx-2">Regulamento</span>
-            </Link>
-          </NavItem>
+    this.ref = React.createRef();
+  }
 
-          <NavDropdown.Divider />
+  componentDidMount() {
+    document.addEventListener('click', this.handleClick.bind(this));
+  }
 
-          {isValidUser(auth, user) && (
-            <NavItem>
-              <Link to="/buscar-aposta" className="nav-link">
-                <FontAwesomeIcon icon={faKey} />
-                <span className="mx-2">Aprovar Aposta</span>
+  componentWillUnmount() {
+    document.removeEventListener('click', this.handleClick.bind(this));
+  }
+
+  handleClick(e) {
+    if (this.ref.current && !this.ref.current.contains(e.target)) {
+      this.collapse();
+    }
+  }
+
+  collapse() {
+    this.setState({
+      expanded: false,
+    });
+  }
+
+  render() {
+    const { auth, user } = this.props;
+
+    return (
+      <div ref={this.ref}>
+        <Navbar
+          expand="md"
+          variant="dark"
+          fixed="top"
+          onToggle={() => this.setState({ expanded: !this.state.expanded })}
+          expanded={this.state.expanded}
+        >
+          <Container fluid>
+            <Navbar.Brand>
+              <Link to="/" onClick={this.collapse.bind(this)}>
+                <img src="/logo.png" height="27" alt="SS eSportiva" />
               </Link>
-            </NavItem>
-          )}
+            </Navbar.Brand>
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse id="basic-navbar-nav">
+              <Nav>
+                <NavItem>
+                  <Link
+                    to="/"
+                    onClick={this.collapse.bind(this)}
+                    className="nav-link"
+                  >
+                    <FontAwesomeIcon icon={faFutbol} />
+                    <span className="mx-2">Futebol</span>
+                  </Link>
+                </NavItem>
 
-          <NavItem>
-            <Link to="/acesso" className="nav-link">
-              <FontAwesomeIcon icon={faKey} />
-              <span className="mx-2">Acesso</span>
-            </Link>
-          </NavItem>
-        </Nav>
-      </Navbar.Collapse>
-    </Container>
-  </Navbar>
-);
+                <NavItem>
+                  <Link
+                    to="/conferir-bilhete"
+                    onClick={this.collapse.bind(this)}
+                    className="nav-link"
+                  >
+                    <FontAwesomeIcon icon={faTicketAlt} />
+                    <span className="mx-2">Conferir Bilhete</span>
+                  </Link>
+                </NavItem>
 
-Navigation.propTypes = {
-  auth: PropTypes.object.isRequired,
-  user: PropTypes.object,
-};
+                <NavItem>
+                  <Link
+                    to="/regulamento"
+                    onClick={this.collapse.bind(this)}
+                    className="nav-link"
+                  >
+                    <FontAwesomeIcon icon={faFileAlt} />
+                    <span className="mx-2">Regulamento</span>
+                  </Link>
+                </NavItem>
+
+                <NavDropdown.Divider />
+
+                {isValidUser(auth, user) && (
+                  <NavItem>
+                    <Link
+                      to="/buscar-aposta"
+                      onClick={this.collapse.bind(this)}
+                      className="nav-link"
+                    >
+                      <FontAwesomeIcon icon={faKey} />
+                      <span className="mx-2">Aprovar Aposta</span>
+                    </Link>
+                  </NavItem>
+                )}
+
+                <NavItem>
+                  <Link
+                    to="/acesso"
+                    onClick={this.collapse.bind(this)}
+                    className="nav-link"
+                  >
+                    <FontAwesomeIcon icon={faKey} />
+                    <span className="mx-2">Acesso</span>
+                  </Link>
+                </NavItem>
+              </Nav>
+            </Navbar.Collapse>
+          </Container>
+        </Navbar>
+      </div>
+    );
+  }
+}
 
 export default Navigation;
