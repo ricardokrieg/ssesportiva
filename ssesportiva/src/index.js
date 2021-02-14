@@ -7,7 +7,6 @@ import { isLoaded } from 'react-redux-firebase';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
 import { isNull } from 'lodash';
 import { PersistGate } from 'redux-persist/integration/react';
-
 import App from './App';
 import SplashScreen from './components/SplashScreen';
 import firebase from './services/firebase';

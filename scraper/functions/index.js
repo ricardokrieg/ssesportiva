@@ -568,6 +568,8 @@ async function scrapeContent() {
 
     if (category.toLowerCase() === `jogos do dia`) {
       isDayGames = true;
+      // TODO not scraping "jogos do dia" anymore
+      continue;
     }
 
     const championshipsNode = $('a', country.next);
@@ -785,7 +787,7 @@ exports.getGamesByDate = functions
     try {
       const { date } = data;
 
-      if (isValidString(date) || date.length !== 10) {
+      if (!isValidString(date) || date.length !== 10) {
         return { error: "Data inválida" };
       }
 
@@ -798,7 +800,23 @@ exports.getGamesByDate = functions
 
       const games = [];
       for (let docSnapshot of querySnapshot.docs) {
-        games.push(docSnapshot.data());
+        const data = docSnapshot.data();
+        const quote = _.find(data.quotes, (quote) => quote.type.toLowerCase() === 'vencedor do encontro');
+
+        if (!quote) continue;
+
+        const gameData = {
+          title: data.title,
+          date: data.date,
+          id: data.id,
+          quote,
+          championshipTitle: data.championshipTitle,
+          championshipId: data.championshipId,
+          group: data.group,
+        };
+
+        // TODO use a validator to check if gameData is valid
+        games.push(gameData);
       }
 
       return games;

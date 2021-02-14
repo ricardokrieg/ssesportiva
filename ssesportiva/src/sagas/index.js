@@ -6,7 +6,7 @@ import { watchGetGroups } from './groups';
 
 import { watchGetChampionship } from './championship';
 
-import { watchGetGame } from './game';
+import { watchGetGame, watchGetGamesByDate } from './game';
 
 import { watchAddOption, watchRemoveOption, watchPlaceBet } from './bet';
 
@@ -22,6 +22,7 @@ export default function* rootSaga() {
     watchGetGroups(),
     watchGetChampionship(),
     watchGetGame(),
+    watchGetGamesByDate(),
     watchAddOption(),
     watchRemoveOption(),
     watchPlaceBet(),
