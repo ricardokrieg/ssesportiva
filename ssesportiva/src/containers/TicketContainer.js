@@ -11,8 +11,7 @@ import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/fontawesome-free-brands';
 
-const fontFamily =
-  'Montserrat, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
+const fontFamily = 'monospace, monospace';
 
 class TicketContainer extends React.Component {
   constructor(props) {
@@ -41,6 +40,13 @@ class TicketContainer extends React.Component {
     if (result === 'loss') return 'Perdeu';
 
     return null;
+  }
+
+  getClassForOption(lastIndex, index) {
+    let className = 'm-3 pb-3 border-primary';
+    if (index >= 0 && index < lastIndex) className += ' border-bottom';
+
+    return className;
   }
 
   renderShare() {
@@ -107,12 +113,15 @@ class TicketContainer extends React.Component {
     );
 
     return (
-      <div>
-        <h4>Bilhete {ticket.ticketCode}</h4>
-        <div>{betType}</div>
-        <div>{date}</div>
+      <div
+        className="p-2 pb-3"
+        style={{ borderBottomStyle: 'dashed', borderWidth: '2px' }}
+      >
+        <h4 className="text-center">Bilhete {ticket.ticketCode}</h4>
+        <div className="text-center mb-2">{betType}</div>
+        <div>Data:......: {date}</div>
         <div>Colaborador: {ticket.approvedByName}</div>
-        <div>Cliente: {ticket.name}</div>
+        <div>Cliente....: {ticket.name}</div>
       </div>
     );
   }
@@ -121,39 +130,42 @@ class TicketContainer extends React.Component {
     const { ticket } = this.props;
 
     return (
-      <div className="p-3">
+      <div
+        className="p-2 pt-3"
+        style={{ borderTopStyle: 'dashed', borderWidth: '2px' }}
+      >
+        <div>Quantidade de Jogos: {ticket.options.length}</div>
+        <div>Cotação............: {ticket.totalQuote.toFixed(2)}</div>
         <div>
-          <div>Quantidade de Jogos: {ticket.options.length}</div>
-          <div>Cotação: {ticket.totalQuote.toFixed(2)}</div>
-          <div>
-            <span>Valor Apostado:</span>
-            <NumberFormat
-              decimalSeparator=","
-              value={ticket.value / 100}
-              prefix={'R$ '}
-              displayType={'text'}
-              fixedDecimalScale
-              decimalScale={2}
-            />
-          </div>
-          <div>
-            <span>Possível Retorno:</span>
-            <NumberFormat
-              decimalSeparator=","
-              value={ticket.expectedReturn / 100}
-              prefix={'R$ '}
-              displayType={'text'}
-              fixedDecimalScale
-              decimalScale={2}
-            />
-          </div>
-          {ticket.result && (
-            <div>
-              <span>Resultado:</span>
-              <span>{this.getTicketResult(ticket.result)}</span>
-            </div>
-          )}
+          <span>Valor Apostado.....:</span>
+          <NumberFormat
+            className="ms-2"
+            decimalSeparator=","
+            value={ticket.value / 100}
+            prefix={'R$ '}
+            displayType={'text'}
+            fixedDecimalScale
+            decimalScale={2}
+          />
         </div>
+        <div>
+          <span>Possível Retorno...:</span>
+          <NumberFormat
+            className="ms-2"
+            decimalSeparator=","
+            value={ticket.expectedReturn / 100}
+            prefix={'R$ '}
+            displayType={'text'}
+            fixedDecimalScale
+            decimalScale={2}
+          />
+        </div>
+        {ticket.result && (
+          <div>
+            <span>Resultado....:</span>
+            <span>{this.getTicketResult(ticket.result)}</span>
+          </div>
+        )}
       </div>
     );
   }
@@ -176,7 +188,13 @@ class TicketContainer extends React.Component {
           {this.renderHeader()}
 
           {ticket.options.map((option, optionIndex) => (
-            <div key={optionIndex + 1} className="mb-3 p-3 border-bottom">
+            <div
+              key={optionIndex + 1}
+              className={this.getClassForOption(
+                ticket.options.length - 1,
+                optionIndex
+              )}
+            >
               <div>
                 {option.group} - {option.championship}
               </div>
@@ -189,12 +207,7 @@ class TicketContainer extends React.Component {
             </div>
           ))}
 
-          <hr />
-
           {this.renderFooter()}
-
-          <hr />
-
           {this.renderSetResult()}
         </div>
       </>
