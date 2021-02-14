@@ -44,8 +44,8 @@ const baseUrl = `https://thebets.bet/simulador`;
 const MIN_BET_VALUE = 200; // R$2,00
 const MAX_BET_VALUE = 100000; // R$1.000,00
 const MIN_QUOTE_VALUE = 2;
-const MIN_MINUTES_BEFORE_RESULT = 120;
-const DEFAULT_MAX_VALUE = 1000;
+const MIN_MINUTES_BEFORE_RESULT = 120; // 2 hours
+const DEFAULT_MAX_VALUE = 1000; // R$1.000,00
 
 function dateIsPast(date) {
   return moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'));
@@ -383,13 +383,13 @@ async function generateBetCode() {
 }
 
 function randomTicketCode() {
-  let code = _.sample('123456789ABCDEFGHJKMNPQRSTWXYZ');
+  let code = _.sample('23456789ABCDEFGHJKMNPQRSTWXYZ');
   while (code.length < 4) {
-    code += _.sample('123456789ABCDEFGHJKMNPQRSTWXYZ');
+    code += _.sample('23456789ABCDEFGHJKMNPQRSTWXYZ');
   }
   code += '-';
   while (code.length < 9) {
-    code += _.sample('123456789ABCDEFGHJKMNPQRSTWXYZ');
+    code += _.sample('23456789ABCDEFGHJKMNPQRSTWXYZ');
   }
 
   return code;
@@ -982,17 +982,6 @@ exports.searchBet = functions
           }
         }
 
-        let gameNotFinished = false;
-        for (let option of betData['options']) {
-          const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo');
-          const dateDiffMinutes = (dateDiff / 1000) / 60;
-
-          if (dateDiffMinutes < MIN_MINUTES_BEFORE_RESULT) {
-            gameNotFinished = true;
-            break;
-          }
-        }
-
         if (betData['confirmedAt']) {
           if (betData['confirmedById'] === member.uid || betData['confirmedBy'] === member.email) {
             // TODO cancel ticket won't be done yet
@@ -1001,10 +990,6 @@ exports.searchBet = functions
             // } else {
             //   betData['canCancel'] = true;
             // }
-          }
-
-          if (!betData['result'] && !gameNotFinished) {
-            betData['canSetResult'] = true;
           }
         } else {
           if (gameStarted) {
@@ -1181,6 +1166,7 @@ exports.setTicketResult = functions
   .onCall(async (data, context) => {
     try {
       const member = await getMember(context);
+      const { code, result } = data;
 
       if (!member) {
         console.error(new Error(`Non-Member tried to set ticket result ${JSON.stringify(data)}`));
@@ -1192,21 +1178,17 @@ exports.setTicketResult = functions
         return { error: "Você não pode definir o resultado desse bilhete!" };
       }
 
-      const result = data['result'];
-
       if (!result || result.length === 0 || ['win', 'loss'].indexOf(result) === -1) {
         console.error(new Error(`Member ${member.email} tried to set an invalid result ${JSON.stringify(data)}`));
         return { error: "Este resultado não é válido" };
       }
-
-      const code = data['code'];
 
       if (!code || code.length === 0) {
         console.error(new Error(`Member ${member.email} tried to set result for an invalid ticket ${JSON.stringify(data)}`));
         return { error: "Bilhete não encontrado" };
       }
 
-      const docRef = betsCol.doc(code);
+      const docRef = ticketsCol.doc(code);
       const docSnapshot = await docRef.get();
 
       if (!docSnapshot.exists) {
@@ -1214,14 +1196,9 @@ exports.setTicketResult = functions
         return { error: "Bilhete não encontrado" };
       }
 
-      const betData = docSnapshot.data();
+      const ticketData = docSnapshot.data();
 
-      if (!betData['confirmedAt']) {
-        console.error(new Error(`Member ${member.email} tried to set result for a non-confirmed ticket ${JSON.stringify(data)}`));
-        return { error: "Bilhete não foi confirmado" };
-      }
-
-      for (let option of betData['options']) {
+      for (let option of ticketData['options']) {
         const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo');
         const dateDiffMinutes = (dateDiff / 1000) / 60;
 
@@ -1235,14 +1212,14 @@ exports.setTicketResult = functions
       const resultSetBy = member.email;
       const resultSetById = member.uid;
 
-      betData['result'] = result;
-      betData['resultSetAt'] = resultSetAt;
-      betData['resultSetBy'] = resultSetBy;
-      betData['resultSetById'] = resultSetById;
+      ticketData['result'] = result;
+      ticketData['resultSetAt'] = resultSetAt;
+      ticketData['resultSetBy'] = resultSetBy;
+      ticketData['resultSetById'] = resultSetById;
 
       await docSnapshot.ref.update({ result, resultSetAt, resultSetBy, resultSetById });
 
-      return betData;
+      return ticketData;
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };
@@ -1304,7 +1281,24 @@ exports.getTicket = functions
         return { error: "Bilhete não encontrado" };
       }
 
-      return docSnapshot.data();
+      const ticketData = docSnapshot.data();
+
+      let gameNotFinished = false;
+      for (let option of ticketData['options']) {
+        const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo');
+        const dateDiffMinutes = (dateDiff / 1000) / 60;
+
+        if (dateDiffMinutes < MIN_MINUTES_BEFORE_RESULT) {
+          gameNotFinished = true;
+          break;
+        }
+      }
+
+      if (!ticketData['result'] && !gameNotFinished) {
+        ticketData['canSetResult'] = true;
+      }
+
+      return ticketData;
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };

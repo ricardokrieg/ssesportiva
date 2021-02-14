@@ -8,6 +8,7 @@ import { compose } from 'redux';
 import { withRouter } from 'react-router';
 import { confirmPendingBet, getPendingBet } from '../actions/pending_bet';
 import { isNull, isEmpty } from 'lodash';
+import Error from '../components/Error';
 
 class ConfirmBetContainer extends React.Component {
   constructor(props) {
@@ -50,6 +51,28 @@ class ConfirmBetContainer extends React.Component {
     const { confirmPendingBet, pendingBet } = this.props;
 
     confirmPendingBet(pendingBet.code, 'Teste');
+  }
+
+  renderConfirmButton() {
+    const { pendingBet } = this.props;
+
+    if (!pendingBet.canConfirm) {
+      const message =
+        pendingBet.statusWarningConfirm ||
+        'Esta aposta não pode ser confirmada';
+      return <div className="align-self-end text-danger">{message}</div>;
+    }
+
+    return (
+      <Button
+        size="lg"
+        className="align-self-end text-white"
+        variant="primary"
+        onClick={() => this.confirmPendingBet()}
+      >
+        Aprovar
+      </Button>
+    );
   }
 
   renderFooter() {
@@ -117,14 +140,7 @@ class ConfirmBetContainer extends React.Component {
             </Col>
 
             <Col className="d-flex justify-content-center">
-              <Button
-                size="lg"
-                className="align-self-end text-white"
-                variant="success"
-                onClick={() => this.confirmPendingBet()}
-              >
-                Confirmar
-              </Button>
+              {this.renderConfirmButton()}
             </Col>
           </Row>
         </Form>
@@ -133,11 +149,10 @@ class ConfirmBetContainer extends React.Component {
   }
 
   render() {
-    const { pendingBet } = this.props;
+    const { pendingBet, loadingPendingBet } = this.props;
 
-    if (isNull(pendingBet)) {
-      return <div></div>;
-    }
+    if (!this.state.ready || loadingPendingBet) return <Loading />;
+    if (!pendingBet) return <Error error={'Aposta inválida'} />;
 
     return (
       <>
@@ -169,6 +184,7 @@ const mapStateToProps = (state) => {
   return {
     pendingBet: state.pendingBet.data,
     ticketCode: state.pendingBet.ticketCode,
+    loadingPendingBet: state.pendingBet.loading,
     loading: state.pendingBet.confirmLoading,
     error: state.pendingBet.confirmError,
   };

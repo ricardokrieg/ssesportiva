@@ -10,7 +10,7 @@ import { watchGetGame, watchGetGamesByDate } from './game';
 
 import { watchAddOption, watchRemoveOption, watchPlaceBet } from './bet';
 
-import { watchGetTicket } from './ticket';
+import { watchGetTicket, watchSetTicketResult } from './ticket';
 
 import { watchGetPendingBet, watchConfirmPendingBet } from './pending_bet';
 
@@ -27,6 +27,7 @@ export default function* rootSaga() {
     watchRemoveOption(),
     watchPlaceBet(),
     watchGetTicket(),
+    watchSetTicketResult(),
     watchGetPendingBet(),
     watchConfirmPendingBet(),
   ]);

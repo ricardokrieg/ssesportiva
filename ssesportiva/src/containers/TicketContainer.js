@@ -1,15 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Col, Row } from 'react-bootstrap';
 import NumberFormat from 'react-number-format';
-import Form from 'react-bootstrap/Form';
 import Loading from '../components/Loading';
 import { compose } from 'redux';
 import { withRouter } from 'react-router';
-import { getTicket } from '../actions/ticket';
-import { isNull } from 'lodash';
+import { getTicket, setTicketResult } from '../actions/ticket';
 import Error from '../components/Error';
 import moment from 'moment';
+import { Button } from 'react-bootstrap';
 
 const fontFamily =
   'Montserrat, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
@@ -34,6 +32,45 @@ class TicketContainer extends React.Component {
     getTicket(id, () => {
       this.setState({ ready: true });
     });
+  }
+
+  getTicketResult(result) {
+    if (result === 'win') return 'Ganhou';
+    if (result === 'loss') return 'Perdeu';
+
+    return null;
+  }
+
+  renderSetResult() {
+    const { ticket, loadingSetTicket, errorSetTicket } = this.props;
+
+    if (!ticket.canSetResult) {
+      return null;
+    }
+
+    if (loadingSetTicket) return <Loading />;
+    if (errorSetTicket) return <Error error={errorSetTicket} />;
+
+    return (
+      <div className="p-3 d-flex justify-content-between">
+        <Button
+          onClick={() => {
+            this.props.setTicketResult(ticket.ticketCode, 'win');
+          }}
+          variant="success"
+        >
+          Ganhou
+        </Button>
+        <Button
+          onClick={() => {
+            this.props.setTicketResult(ticket.ticketCode, 'loss');
+          }}
+          variant="danger"
+        >
+          Perdeu
+        </Button>
+      </div>
+    );
   }
 
   renderHeader() {
@@ -86,6 +123,12 @@ class TicketContainer extends React.Component {
               decimalScale={2}
             />
           </div>
+          {ticket.result && (
+            <div>
+              <span>Resultado:</span>
+              <span>{this.getTicketResult(ticket.result)}</span>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -122,6 +165,10 @@ class TicketContainer extends React.Component {
           <hr />
 
           {this.renderFooter()}
+
+          <hr />
+
+          {this.renderSetResult()}
         </div>
       </>
     );
@@ -133,12 +180,15 @@ const mapStateToProps = (state) => {
     ticket: state.ticket.data,
     loading: state.ticket.loading,
     error: state.ticket.error,
+    loadingSetTicket: state.ticket.loadingSetTicket,
+    errorSetTicket: state.ticket.errorSetTicket,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
     getTicket: (id, callback) => dispatch(getTicket(id), callback()),
+    setTicketResult: (id, result) => dispatch(setTicketResult(id, result)),
   };
 };
 
