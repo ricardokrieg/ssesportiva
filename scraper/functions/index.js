@@ -102,9 +102,22 @@ function isValidBet(bet) {
   if (!totalQuote || isNaN(totalQuote) || totalQuote < MIN_QUOTE_VALUE) return false;
   if (!options || options.length < 1) return false;
   if (!_.every(options, isValidBetOption)) return false;
-  // for (let option of options) { if (!isValidBetOption(option)) return false; }
 
   return true;
+}
+
+function betHasPastDateGame(bet) {
+  const {
+    options,
+  } = bet;
+
+  for (let option of options) {
+    if (dateIsPast(option.gameDate)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function isValidQuoteOption(option) {
@@ -965,8 +978,13 @@ exports.placeBet = functions
 
         return betData;
       } else {
-        console.error(new Error(`invalid bet: ${JSON.stringify(betData)}`));
-        return { error: "Ocorreu um erro!" };
+        if (betHasPastDateGame(betData)) {
+          console.error(new Error(`invalid bet, match started: ${JSON.stringify(betData)}`));
+          return { error: "Uma partida já iniciou" };
+        } else {
+          console.error(new Error(`invalid bet: ${JSON.stringify(betData)}`));
+          return { error: "Ocorreu um erro!" };
+        }
       }
     } catch (e) {
       console.error(e);
@@ -1100,7 +1118,7 @@ exports.confirmTicket = functions
       const confirmedAt = admin.firestore.Timestamp.now();
       const confirmedBy = member.email;
       const confirmedById = member.uid;
-      const confirmedByName = member.name;
+      const confirmedByName = member.name || '';
 
       betData['confirmedAt'] = confirmedAt;
       betData['confirmedBy'] = confirmedBy;
