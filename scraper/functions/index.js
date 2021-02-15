@@ -1063,7 +1063,7 @@ exports.confirmTicket = functions
       }
 
       const code = data['code'];
-      const name = data['name'];
+      const name = data['name'] || '';
 
       if (!code || code.length === 0) {
         console.error(new Error(`Member ${member.email} tried to confirm an invalid ticket ${JSON.stringify(data)}`));
