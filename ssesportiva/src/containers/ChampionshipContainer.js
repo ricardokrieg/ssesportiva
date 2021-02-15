@@ -5,9 +5,9 @@ import { compose } from 'redux';
 
 import { getChampionship } from '../actions/championship';
 import { addOption, removeOption } from '../actions/bet';
-import { Button, Row, Col, ButtonGroup } from 'react-bootstrap';
+import { Button, Row, Col, ButtonGroup, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { find } from 'lodash';
+import { find, filter, isEmpty } from 'lodash';
 import CurrentBet from '../components/CurrentBet';
 import Loading from '../components/Loading';
 import Error from '../components/Error';
@@ -18,6 +18,7 @@ class ChampionshipContainer extends React.Component {
 
     this.state = {
       ready: false,
+      query: '',
     };
   }
 
@@ -50,6 +51,17 @@ class ChampionshipContainer extends React.Component {
     return this.isSelectedOption(option) ? 'warning' : 'primary';
   }
 
+  filterGame(game) {
+    let { query } = this.state;
+    query = query.toLowerCase();
+
+    return (
+      isEmpty(query.trim()) ||
+      game.title.toLowerCase().includes(query) ||
+      game.date.toLowerCase().includes(query)
+    );
+  }
+
   render() {
     const { loading, error, championship } = this.props;
 
@@ -64,44 +76,58 @@ class ChampionshipContainer extends React.Component {
           <h3 className="text-center p-3">{championship.title}</h3>
         </div>
 
-        <div className="bg-light p-3 pt-2">
-          {championship.games.map((game, index) => (
-            <div
-              className="shadow-sm p-3 mb-2 bg-white rounded"
-              key={index + 1}
-            >
-              <Row>
-                <Col>
-                  <Link to={'/jogo/' + game.id}>
-                    {game.title} {game.date}
-                  </Link>
-                </Col>
+        {championship.games.length > 3 && (
+          <div className="mx-3">
+            <Form.Control
+              type="search"
+              placeholder="Buscar jogos por nome ou horário"
+              onChange={(e) => {
+                this.setState({ query: e.target.value });
+              }}
+            />
+          </div>
+        )}
 
-                <Col className="d-flex align-items-center">
-                  <ButtonGroup className="w-100" style={{ height: '40px' }}>
-                    {game.quote.options.map((option, optionIndex) => (
-                      <Button
-                        key={optionIndex + 1}
-                        size="sm"
-                        className="border-white rounded"
-                        variant={this.btnVariant(option)}
-                        onClick={() =>
-                          this.handleOptionClick(
-                            championship,
-                            game,
-                            game.quote,
-                            option
-                          )
-                        }
-                      >
-                        {option.quote}
-                      </Button>
-                    ))}
-                  </ButtonGroup>
-                </Col>
-              </Row>
-            </div>
-          ))}
+        <div className="bg-light p-3 pt-2">
+          {filter(championship.games, this.filterGame.bind(this)).map(
+            (game, index) => (
+              <div
+                className="shadow-sm p-3 mb-2 bg-white rounded"
+                key={index + 1}
+              >
+                <Row>
+                  <Col>
+                    <Link to={'/jogo/' + game.id}>
+                      {game.title} {game.date}
+                    </Link>
+                  </Col>
+
+                  <Col className="d-flex align-items-center">
+                    <ButtonGroup className="w-100" style={{ height: '40px' }}>
+                      {game.quote.options.map((option, optionIndex) => (
+                        <Button
+                          key={optionIndex + 1}
+                          size="sm"
+                          className="border-white rounded"
+                          variant={this.btnVariant(option)}
+                          onClick={() =>
+                            this.handleOptionClick(
+                              championship,
+                              game,
+                              game.quote,
+                              option
+                            )
+                          }
+                        >
+                          {option.quote}
+                        </Button>
+                      ))}
+                    </ButtonGroup>
+                  </Col>
+                </Row>
+              </div>
+            )
+          )}
         </div>
       </>
     );

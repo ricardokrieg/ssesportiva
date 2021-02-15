@@ -4,9 +4,9 @@ import { withRouter } from 'react-router';
 import { compose } from 'redux';
 import { getGamesByDate } from '../actions/game';
 import { addOption, removeOption } from '../actions/bet';
-import { Button, Row, Col, ButtonGroup } from 'react-bootstrap';
+import { Button, Row, Col, ButtonGroup, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { find } from 'lodash';
+import { find, filter, isEmpty } from 'lodash';
 import CurrentBet from '../components/CurrentBet';
 import Loading from '../components/Loading';
 import Error from '../components/Error';
@@ -27,6 +27,7 @@ class GamesByDateContainer extends React.Component {
     this.state = {
       ready: false,
       date: '',
+      query: '',
     };
   }
 
@@ -63,6 +64,56 @@ class GamesByDateContainer extends React.Component {
     return this.isSelectedOption(option) ? 'warning' : 'primary';
   }
 
+  filterGroup(group) {
+    let { query } = this.state;
+    query = query.toLowerCase();
+
+    if (isEmpty(query.trim())) return true;
+
+    for (let championship of group.championships) {
+      for (let game of championship.games) {
+        if (
+          game.title.toLowerCase().includes(query) ||
+          game.date.toLowerCase().includes(query)
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  filterChampionship(championship) {
+    let { query } = this.state;
+    query = query.toLowerCase();
+
+    if (isEmpty(query.trim())) return true;
+
+    for (let game of championship.games) {
+      if (
+        game.title.toLowerCase().includes(query) ||
+        game.date.toLowerCase().includes(query)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  filterGame(game) {
+    let { query } = this.state;
+    query = query.toLowerCase();
+
+    if (isEmpty(query.trim())) return true;
+
+    return (
+      game.title.toLowerCase().includes(query) ||
+      game.date.toLowerCase().includes(query)
+    );
+  }
+
   render() {
     const { loading, error, groups } = this.props;
 
@@ -77,55 +128,70 @@ class GamesByDateContainer extends React.Component {
           <h3 className="text-center p-3">{getWeekDay(this.state.date)}</h3>
         </div>
 
+        <div className="mx-3">
+          <Form.Control
+            type="search"
+            placeholder="Buscar jogos por nome ou horário"
+            onChange={(e) => {
+              this.setState({ query: e.target.value });
+            }}
+          />
+        </div>
+
         <div className="bg-light p-3 pt-2">
-          {groups.map((group, index) => (
+          {filter(groups, this.filterGroup.bind(this)).map((group, index) => (
             <div key={index + 1}>
               <h3>{group.name}</h3>
 
-              {group.championships.map((championship, championshipIndex) => (
+              {filter(
+                group.championships,
+                this.filterChampionship.bind(this)
+              ).map((championship, championshipIndex) => (
                 <div key={championshipIndex + 1}>
                   <h4>{championship.title}</h4>
 
-                  {championship.games.map((game, gameIndex) => (
-                    <div
-                      className="shadow-sm p-3 mb-2 bg-white rounded"
-                      key={gameIndex + 1}
-                    >
-                      <Row>
-                        <Col>
-                          <Link to={'/jogo/' + game.id}>
-                            {game.title} {game.date}
-                          </Link>
-                        </Col>
+                  {filter(championship.games, this.filterGame.bind(this)).map(
+                    (game, gameIndex) => (
+                      <div
+                        className="shadow-sm p-3 mb-2 bg-white rounded"
+                        key={gameIndex + 1}
+                      >
+                        <Row>
+                          <Col>
+                            <Link to={'/jogo/' + game.id}>
+                              {game.title} {game.date}
+                            </Link>
+                          </Col>
 
-                        <Col className="d-flex align-items-center">
-                          <ButtonGroup
-                            className="w-100"
-                            style={{ height: '40px' }}
-                          >
-                            {game.quote.options.map((option, optionIndex) => (
-                              <Button
-                                key={optionIndex + 1}
-                                size="sm"
-                                className="border-white rounded"
-                                variant={this.btnVariant(option)}
-                                onClick={() =>
-                                  this.handleOptionClick(
-                                    championship,
-                                    game,
-                                    game.quote,
-                                    option
-                                  )
-                                }
-                              >
-                                {option.quote}
-                              </Button>
-                            ))}
-                          </ButtonGroup>
-                        </Col>
-                      </Row>
-                    </div>
-                  ))}
+                          <Col className="d-flex align-items-center">
+                            <ButtonGroup
+                              className="w-100"
+                              style={{ height: '40px' }}
+                            >
+                              {game.quote.options.map((option, optionIndex) => (
+                                <Button
+                                  key={optionIndex + 1}
+                                  size="sm"
+                                  className="border-white rounded"
+                                  variant={this.btnVariant(option)}
+                                  onClick={() =>
+                                    this.handleOptionClick(
+                                      championship,
+                                      game,
+                                      game.quote,
+                                      option
+                                    )
+                                  }
+                                >
+                                  {option.quote}
+                                </Button>
+                              ))}
+                            </ButtonGroup>
+                          </Col>
+                        </Row>
+                      </div>
+                    )
+                  )}
                 </div>
               ))}
             </div>
