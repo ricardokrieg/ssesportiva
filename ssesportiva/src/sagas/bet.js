@@ -15,6 +15,7 @@ import firebase from '../services/firebase';
 
 export const getValue = (state) => state.bet.value;
 export const getOptions = (state) => state.bet.options;
+export const getName = (state) => state.bet.name;
 
 export function* addOption({ payload: { championship, game, quote, option } }) {
   const optionData = {
@@ -71,6 +72,7 @@ export function* placeBet() {
 
   let betValue = yield select(getValue);
   let options = yield select(getOptions);
+  let name = yield select(getName);
 
   betValue = betValue * 100;
   options = map(options, (option) => pick(option, ['id', 'gameId']));
@@ -79,6 +81,7 @@ export function* placeBet() {
     const response = yield firebase.functions().httpsCallable('placeBet')({
       betValue,
       options,
+      name,
     });
     const { data } = response;
 

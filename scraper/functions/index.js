@@ -851,6 +851,7 @@ exports.placeBet = functions
     try {
       const betValue = data['betValue'];
       const options = data['options'];
+      const name = data['name'];
 
       if (!betValue || isNaN(betValue) || betValue < MIN_BET_VALUE || betValue > MAX_BET_VALUE) {
         return { error: "Valor da aposta inválido" };
@@ -954,6 +955,7 @@ exports.placeBet = functions
 
       betData['expectedReturn'] = totalQuote * betValue;
       betData['totalQuote'] = totalQuote;
+      betData['name'] = name;
 
       const code = String(await generateBetCode());
       betData['code'] = code;
@@ -1061,6 +1063,7 @@ exports.confirmTicket = functions
       }
 
       const code = data['code'];
+      const name = data['name'];
 
       if (!code || code.length === 0) {
         console.error(new Error(`Member ${member.email} tried to confirm an invalid ticket ${JSON.stringify(data)}`));
@@ -1097,17 +1100,20 @@ exports.confirmTicket = functions
       const confirmedAt = admin.firestore.Timestamp.now();
       const confirmedBy = member.email;
       const confirmedById = member.uid;
+      const confirmedByName = member.name;
 
       betData['confirmedAt'] = confirmedAt;
       betData['confirmedBy'] = confirmedBy;
       betData['confirmedById'] = confirmedById;
+      betData['confirmedByName'] = confirmedByName;
 
-      await docSnapshot.ref.update({ confirmedAt, confirmedBy, confirmedById });
+      await docSnapshot.ref.update({ confirmedAt, confirmedBy, confirmedById, confirmedByName });
 
       const ticketCode = String(await generateTicketCode());
       const ticketData = {
         ...betData,
         ticketCode,
+        name,
         ticketCreatedAt: admin.firestore.Timestamp.now()
       };
       await ticketsCol.doc(ticketCode).set(ticketData);

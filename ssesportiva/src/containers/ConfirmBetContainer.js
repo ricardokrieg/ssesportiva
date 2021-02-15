@@ -16,6 +16,7 @@ class ConfirmBetContainer extends React.Component {
 
     this.state = {
       ready: false,
+      name: '',
     };
   }
 
@@ -45,12 +46,20 @@ class ConfirmBetContainer extends React.Component {
     if (isEmpty(prevProps.ticketCode) && !isEmpty(this.props.ticketCode)) {
       this.props.history.replace(`/bilhete/${this.props.ticketCode}`);
     }
+
+    if (
+      this.props.pendingBet &&
+      this.props.pendingBet.name &&
+      isEmpty(this.state.name)
+    ) {
+      this.setState({ name: this.props.pendingBet.name });
+    }
   }
 
   confirmPendingBet() {
     const { confirmPendingBet, pendingBet } = this.props;
 
-    confirmPendingBet(pendingBet.code, 'Teste');
+    confirmPendingBet(pendingBet.code, this.state.name);
   }
 
   renderConfirmButton() {
@@ -135,7 +144,13 @@ class ConfirmBetContainer extends React.Component {
             <Col>
               <Form.Group controlId="name" className="mt-2">
                 <Form.Label className="text-white">Nome do Cliente</Form.Label>
-                <Form.Control type="text" />
+                <Form.Control
+                  type="text"
+                  value={this.state.name}
+                  onChange={(e) => {
+                    this.setState({ name: e.target.value });
+                  }}
+                />
               </Form.Group>
             </Col>
 
@@ -192,7 +207,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    confirmPendingBet: (name) => dispatch(confirmPendingBet(name)),
+    confirmPendingBet: (code, name) => dispatch(confirmPendingBet(code, name)),
     getPendingBet: (id, callback) => dispatch(getPendingBet(id), callback()),
   };
 };

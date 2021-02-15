@@ -2,6 +2,7 @@ import {
   ADD_OPTION,
   REMOVE_OPTION,
   SET_BET_VALUE,
+  SET_NAME,
   PLACE_BET,
   CLEAR_BET,
 } from './actionTypes';
@@ -16,6 +17,10 @@ export const removeOption = (option) => {
 
 export const setBetValue = (value) => {
   return { type: SET_BET_VALUE, payload: { value } };
+};
+
+export const setName = (value) => {
+  return { type: SET_NAME, payload: { value } };
 };
 
 export const placeBet = () => {

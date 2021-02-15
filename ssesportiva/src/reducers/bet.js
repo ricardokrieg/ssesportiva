@@ -4,6 +4,7 @@ import {
   ADD_OPTION_SUCCESS,
   REMOVE_OPTION_SUCCESS,
   SET_BET_VALUE,
+  SET_NAME,
   PLACE_BET_LOADING,
   PLACE_BET_SUCCESS,
   PLACE_BET_ERROR,
@@ -18,6 +19,7 @@ const initialState = {
   error: null,
   loading: false,
   code: '',
+  name: '',
 };
 
 const calculateQuote = (options) => {
@@ -62,6 +64,11 @@ export default function betReducer(state = initialState, action) {
         ...state,
         value: parseFloat(value),
         expectedReturn,
+      };
+    case SET_NAME:
+      return {
+        ...state,
+        name: action.payload.value,
       };
     case PLACE_BET_LOADING:
       return {

@@ -120,7 +120,7 @@ class TicketContainer extends React.Component {
         <h4 className="text-center">Bilhete {ticket.ticketCode}</h4>
         <div className="text-center mb-2">{betType}</div>
         <div>Data:......: {date}</div>
-        <div>Colaborador: {ticket.approvedByName}</div>
+        <div>Colaborador: {ticket.confirmedByName}</div>
         <div>Cliente....: {ticket.name}</div>
       </div>
     );

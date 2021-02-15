@@ -1,7 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Button, Col, Row } from 'react-bootstrap';
-import { removeOption, setBetValue, placeBet, clearBet } from '../actions/bet';
+import {
+  removeOption,
+  setBetValue,
+  setName,
+  placeBet,
+  clearBet,
+} from '../actions/bet';
 import NumberFormat from 'react-number-format';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -91,7 +97,12 @@ class BetSummaryContainer extends React.Component {
             <Col>
               <Form.Group controlId="name" className="mt-2">
                 <Form.Label className="text-white">Seu Nome</Form.Label>
-                <Form.Control type="text" />
+                <Form.Control
+                  type="text"
+                  onChange={(e) => {
+                    this.props.setName(e.target.value);
+                  }}
+                />
               </Form.Group>
             </Col>
 
@@ -168,6 +179,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     removeOption: (option) => dispatch(removeOption(option)),
     setBetValue: (value) => dispatch(setBetValue(value)),
+    setName: (value) => dispatch(setName(value)),
     placeBet: () => dispatch(placeBet()),
     clearBet: () => dispatch(clearBet()),
   };
