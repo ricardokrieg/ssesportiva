@@ -1,13 +1,19 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { getPendingBet, clearPendingBet } from '../actions/pending_bet';
+import { getConfirmedBets } from '../actions/confirmed_bet';
 import Loading from '../components/Loading';
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Row, Col, ButtonGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { compose } from 'redux';
 import { withRouter } from 'react-router';
 import { isEmpty, isNull } from 'lodash';
+import { Link } from 'react-router-dom';
+
+const isValidUser = (auth, user) => {
+  return auth && !auth.isEmpty && !isNull(user);
+};
 
 class SearchBetContainer extends React.Component {
   constructor(props) {
@@ -19,7 +25,7 @@ class SearchBetContainer extends React.Component {
   }
 
   componentDidMount() {
-    const { clearPendingBet } = this.props;
+    const { clearPendingBet, getConfirmedBets, auth, user } = this.props;
 
     this.setState({ ready: false });
 
@@ -32,10 +38,14 @@ class SearchBetContainer extends React.Component {
     if (isNull(prevProps.pendingBet) && !isNull(this.props.pendingBet)) {
       this.props.history.push(`/aposta/${this.props.pendingBet.code}`);
     }
+
+    // if (!isValidUser(prevProps.auth, prevProps.user) && isValidUser(this.props.auth, this.props.user)) {
+    //   this.props.getConfirmedBets();
+    // }
   }
 
   renderConfirmedBets() {
-    const { approvedBets } = this.props;
+    const { confirmedBets, loadingConfirmedBets } = this.props;
 
     return (
       <div className="m-3">
@@ -43,9 +53,25 @@ class SearchBetContainer extends React.Component {
 
         <h4 className="text-center">Apostas aprovadas</h4>
 
-        {isEmpty(approvedBets) && (
+        {loadingConfirmedBets ? (
+          <Loading />
+        ) : isEmpty(confirmedBets) ? (
           <div className="text-center mt-3">
             Você ainda não aprovou nenhuma aposta
+          </div>
+        ) : (
+          <div>
+            {confirmedBets.map((bet, index) => (
+              <div
+                className="shadow-sm p-3 mb-2 bg-white rounded"
+                key={index + 1}
+              >
+                <div>
+                  <Link to={`/bilhete/${bet.ticketCode}`}>{bet.createdAt}</Link>
+                </div>
+                <div>{bet.createdAt}</div>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -102,8 +128,12 @@ class SearchBetContainer extends React.Component {
 
 const mapStateToProps = (state) => {
   return {
+    auth: state.firebase.auth,
+    user: state.auth.user,
     pendingBet: state.pendingBet.data,
     loading: state.pendingBet.loading,
+    confirmedBets: state.confirmedBet.data,
+    loadingConfirmedBets: state.confirmedBet.loading,
   };
 };
 
@@ -111,6 +141,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     getPendingBet: (code) => dispatch(getPendingBet(code)),
     clearPendingBet: (callback) => dispatch(clearPendingBet(), callback()),
+    getConfirmedBets: () => dispatch(getConfirmedBets()),
   };
 };
 

@@ -17,6 +17,9 @@ const formatGamesByDate = (games) => {
   const groups = [];
 
   for (let game of games) {
+    const gameDate = moment(game.date, 'DD/MM/YYYY hh:mm');
+    if (gameDate <= moment()) continue;
+
     const { group, championshipTitle, championshipId } = game;
 
     let groupData = find(groups, { name: group });

@@ -727,6 +727,25 @@ exports.scrape = functions
     return null;
 });
 
+exports.resetAllMembers = functions
+  .runWith(runtimeOpts)
+  .pubsub
+  .schedule('0 0 * * MON')
+  .timeZone('America/Sao_Paulo')
+  .onRun(async (context) => {
+    const docSnapshot = await membersCol.get();
+    const resetAt = admin.firestore.Timestamp.now();
+
+    for (let docRef of docSnapshot.docs) {
+      const member = docRef.data();
+      if (member.admin) continue;
+
+      await docRef.ref.update({ resetAt });
+    }
+
+    return null;
+  });
+
 exports.getMenu = functions
   .https
   .onCall(async (_data, _context) => {
@@ -1237,7 +1256,12 @@ exports.getMemberDetails = functions
         return { error: "Você não está logado!" };
       }
 
-      const docRef = betsCol.where('confirmedById', '==', member.uid);
+      let docRef = ticketsCol
+        .where('confirmedById', '==', member.uid);
+      if (member.resetAt) {
+        docRef = docRef.where('confirmedAt', '>=', member.resetAt);
+      }
+
       const querySnapshot = await docRef.get();
 
       let memberIn = 0;
@@ -1246,6 +1270,10 @@ exports.getMemberDetails = functions
       for (let docSnapshot of querySnapshot.docs) {
         const data = await docSnapshot.data();
         memberIn += data['value'];
+
+        if (data['result'] === 'win') {
+          memberOut += data['expectedReturn'];
+        }
       }
 
       const memberCommission = memberIn * 0.2;
@@ -1299,6 +1327,44 @@ exports.getTicket = functions
       }
 
       return ticketData;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getConfirmedBets = functions
+  .https
+  .onCall(async (data, context) => {
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to get confirmed bets`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      if (member.blocked) {
+        console.error(new Error(`BLocked Member ${member.email} tried to get confirmed bets`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      const docRef = betsCol
+        .where('confirmedById', '==', member.uid)
+        .orderBy('confirmedAt', 'desc');
+
+      const querySnapshot = await docRef.get();
+
+      const bets = [];
+      for (let bet of querySnapshot.docs) {
+        const data = bet.data();
+
+        if (member.resetAt && data.approvedAt < member.resetAt) continue;
+
+        bets.push(data);
+      }
+
+      return bets;
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };

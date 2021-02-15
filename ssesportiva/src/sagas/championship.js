@@ -6,6 +6,8 @@ import {
   GET_CHAMPIONSHIP_ERROR,
   GET_CHAMPIONSHIP_LOADING,
 } from '../actions/actionTypes';
+import { filter } from 'lodash';
+import moment from 'moment';
 
 export function* getChampionship({ payload: { id } }) {
   yield put({ type: GET_CHAMPIONSHIP_LOADING });
@@ -25,9 +27,16 @@ export function* getChampionship({ payload: { id } }) {
       return;
     }
 
+    let { games } = data;
+    games = filter(games, (game) => {
+      const gameDate = moment(game.date, 'DD/MM/YYYY hh:mm');
+
+      return gameDate > moment();
+    });
+
     yield put({
       type: GET_CHAMPIONSHIP_SUCCESS,
-      payload: { championship: data, error: null },
+      payload: { championship: { ...data, games }, error: null },
     });
   } catch (error) {
     yield put({
