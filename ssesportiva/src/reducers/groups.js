@@ -1,5 +1,3 @@
-import moment from 'moment';
-
 import {
   GET_GROUPS_SUCCESS,
   GET_GROUPS_ERROR,

@@ -60,15 +60,11 @@ class ChampionshipContainer extends React.Component {
       <>
         <CurrentBet />
 
-        <div
-          className="bg-white"
-          className="px-3"
-          style={{ paddingTop: '54px' }}
-        >
-          <h3 className="text-center mt-3">{championship.title}</h3>
+        <div className="bg-white" style={{ paddingTop: '54px' }}>
+          <h3 className="text-center p-3">{championship.title}</h3>
         </div>
 
-        <div className="bg-light p-3">
+        <div className="bg-light p-3 pt-2">
           {championship.games.map((game, index) => (
             <div
               className="shadow-sm p-3 mb-2 bg-white rounded"

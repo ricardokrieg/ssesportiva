@@ -73,15 +73,11 @@ class GamesByDateContainer extends React.Component {
       <>
         <CurrentBet />
 
-        <div
-          className="bg-white"
-          className="px-3"
-          style={{ paddingTop: '54px' }}
-        >
-          <h3 className="text-center mt-3">{getWeekDay(this.state.date)}</h3>
+        <div className="bg-white" style={{ paddingTop: '54px' }}>
+          <h3 className="text-center p-3">{getWeekDay(this.state.date)}</h3>
         </div>
 
-        <div className="bg-light p-3">
+        <div className="bg-light p-3 pt-2">
           {groups.map((group, index) => (
             <div key={index + 1}>
               <h3>{group.name}</h3>

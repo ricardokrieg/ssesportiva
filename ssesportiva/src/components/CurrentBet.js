@@ -23,7 +23,7 @@ class CurrentBet extends React.Component {
           fixedDecimalScale
           decimalScale={2}
           onValueChange={(values) => {
-            const { formattedValue, value } = values;
+            const { value } = values;
             this.props.setBetValue(value);
           }}
         />

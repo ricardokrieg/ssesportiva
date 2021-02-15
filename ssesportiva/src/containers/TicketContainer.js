@@ -63,6 +63,7 @@ class TicketContainer extends React.Component {
           className="btn btn-success btn-lg text-white"
           href={url}
           target="_blank"
+          rel="noreferrer"
         >
           <FontAwesomeIcon icon={faWhatsapp} />
           <span className="ms-2">WhatsApp</span>

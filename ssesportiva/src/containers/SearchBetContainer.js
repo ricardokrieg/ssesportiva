@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { getPendingBet, clearPendingBet } from '../actions/pending_bet';
 import { getConfirmedBets } from '../actions/confirmed_bet';
 import Loading from '../components/Loading';
-import { Form, Button, Row, Col, ButtonGroup } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { compose } from 'redux';
@@ -11,9 +11,9 @@ import { withRouter } from 'react-router';
 import { isEmpty, isNull } from 'lodash';
 import { Link } from 'react-router-dom';
 
-const isValidUser = (auth, user) => {
-  return auth && !auth.isEmpty && !isNull(user);
-};
+// const isValidUser = (auth, user) => {
+//   return auth && !auth.isEmpty && !isNull(user);
+// };
 
 class SearchBetContainer extends React.Component {
   constructor(props) {

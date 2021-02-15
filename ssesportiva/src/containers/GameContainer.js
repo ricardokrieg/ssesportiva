@@ -4,7 +4,7 @@ import { withRouter } from 'react-router';
 import { compose } from 'redux';
 
 import { getGame } from '../actions/game';
-import { Button, Card } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { find } from 'lodash';
 import { addOption, removeOption } from '../actions/bet';
 import CurrentBet from '../components/CurrentBet';
