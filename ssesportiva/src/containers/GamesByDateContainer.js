@@ -50,8 +50,6 @@ class GamesByDateContainer extends React.Component {
     if (this.isSelectedOption(option)) {
       this.props.removeOption(option);
     } else {
-      console.log(championship);
-      console.log(game);
       this.props.addOption(championship, game, quote, option);
     }
   }

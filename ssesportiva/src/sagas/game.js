@@ -45,8 +45,6 @@ const formatGamesByDate = (games) => {
     championshipData.games.push(game);
   }
 
-  console.log(groups);
-
   return groups;
 };
 

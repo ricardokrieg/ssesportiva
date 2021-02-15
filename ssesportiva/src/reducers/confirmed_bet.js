@@ -35,7 +35,7 @@ export default function confirmedBetReducer(state = initialState, action) {
 
       return {
         ...state,
-        data: null,
+        data: [],
         loading: false,
         error,
       };

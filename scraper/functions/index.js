@@ -1375,22 +1375,22 @@ exports.getConfirmedBets = functions
         return { error: "Ocorreu um erro" };
       }
 
-      const docRef = betsCol
+      const docRef = ticketsCol
         .where('confirmedById', '==', member.uid)
         .orderBy('confirmedAt', 'desc');
 
       const querySnapshot = await docRef.get();
 
-      const bets = [];
-      for (let bet of querySnapshot.docs) {
-        const data = bet.data();
+      const tickets = [];
+      for (let ticket of querySnapshot.docs) {
+        const data = ticket.data();
 
         if (member.resetAt && data.approvedAt < member.resetAt) continue;
 
-        bets.push(data);
+        tickets.push(data);
       }
 
-      return bets;
+      return tickets;
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };

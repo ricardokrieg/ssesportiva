@@ -5,15 +5,20 @@ import { getConfirmedBets } from '../actions/confirmed_bet';
 import Loading from '../components/Loading';
 import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import {
+  faSearch,
+  faLongArrowAltRight,
+} from '@fortawesome/free-solid-svg-icons';
 import { compose } from 'redux';
 import { withRouter } from 'react-router';
 import { isEmpty, isNull } from 'lodash';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
+import NumberFormat from 'react-number-format';
 
-// const isValidUser = (auth, user) => {
-//   return auth && !auth.isEmpty && !isNull(user);
-// };
+const isValidUser = (auth, user) => {
+  return auth && !auth.isEmpty && !isNull(user);
+};
 
 class SearchBetContainer extends React.Component {
   constructor(props) {
@@ -32,16 +37,36 @@ class SearchBetContainer extends React.Component {
     clearPendingBet(() => {
       this.setState({ ready: true });
     });
+
+    if (isValidUser(auth, user)) {
+      getConfirmedBets();
+    }
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (isNull(prevProps.pendingBet) && !isNull(this.props.pendingBet)) {
-      this.props.history.push(`/aposta/${this.props.pendingBet.code}`);
+    const { pendingBet, getConfirmedBets, auth, user } = this.props;
+
+    if (isNull(prevProps.pendingBet) && !isNull(pendingBet)) {
+      this.props.history.push(`/aposta/${pendingBet.code}`);
     }
 
-    // if (!isValidUser(prevProps.auth, prevProps.user) && isValidUser(this.props.auth, this.props.user)) {
-    //   this.props.getConfirmedBets();
-    // }
+    if (
+      !isValidUser(prevProps.auth, prevProps.user) &&
+      isValidUser(auth, user)
+    ) {
+      getConfirmedBets();
+    }
+  }
+
+  getTicketDate(ticket) {
+    return moment(ticket.createdAt._seconds * 1000).format('DD/MM/YYYY hh:mm');
+  }
+
+  getTicketStatus(ticket) {
+    if (ticket.status === 'win') return 'Ganhou';
+    if (ticket.status === 'loss') return 'Perdeu';
+
+    return 'Em Aberto';
   }
 
   renderConfirmedBets() {
@@ -61,15 +86,47 @@ class SearchBetContainer extends React.Component {
           </div>
         ) : (
           <div>
-            {confirmedBets.map((bet, index) => (
+            {confirmedBets.map((ticket, index) => (
               <div
                 className="shadow-sm p-3 mb-2 bg-white rounded"
                 key={index + 1}
               >
-                <div>
-                  <Link to={`/bilhete/${bet.ticketCode}`}>{bet.createdAt}</Link>
-                </div>
-                <div>{bet.createdAt}</div>
+                <Link to={`/bilhete/${ticket.ticketCode}`}>
+                  <h5 className="text-center">{ticket.ticketCode}</h5>
+
+                  <div className="d-flex justify-content-between">
+                    <div>
+                      <div>Cliente: {ticket.name}</div>
+                      <div>{this.getTicketDate(ticket)}</div>
+                    </div>
+
+                    <div>
+                      <div>Status: {this.getTicketStatus(ticket)}</div>
+                      <div>
+                        <NumberFormat
+                          value={ticket.value / 100}
+                          decimalSeparator=","
+                          prefix={'R$ '}
+                          displayType={'text'}
+                          fixedDecimalScale
+                          decimalScale={2}
+                        />
+                        <FontAwesomeIcon
+                          icon={faLongArrowAltRight}
+                          className="mx-3"
+                        />
+                        <NumberFormat
+                          value={ticket.expectedReturn / 100}
+                          decimalSeparator=","
+                          prefix={'R$ '}
+                          displayType={'text'}
+                          fixedDecimalScale
+                          decimalScale={2}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </div>
             ))}
           </div>
