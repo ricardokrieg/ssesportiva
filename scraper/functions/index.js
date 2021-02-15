@@ -1346,7 +1346,9 @@ exports.getTicket = functions
         }
       }
 
-      if (!ticketData['result'] && !gameNotFinished) {
+      const member = await getMember(context);
+
+      if (member && member.admin && !ticketData['result'] && !gameNotFinished) {
         ticketData['canSetResult'] = true;
       }
 
