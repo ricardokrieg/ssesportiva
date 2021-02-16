@@ -18,6 +18,8 @@ import { watchGetConfirmedBets } from './confirmed_bet';
 
 import { watchGetPendingTickets } from './pending_ticket';
 
+import { watchGetMembers } from './member';
+
 export default function* rootSaga() {
   yield all([
     watchSignin(),
@@ -36,5 +38,6 @@ export default function* rootSaga() {
     watchConfirmPendingBet(),
     watchGetConfirmedBets(),
     watchGetPendingTickets(),
+    watchGetMembers(),
   ]);
 }

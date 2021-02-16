@@ -25,6 +25,10 @@ const User = ({ auth, user }) => {
       <table className="table">
         <tbody>
           <tr>
+            <td>Nome</td>
+            <td>{user.name}</td>
+          </tr>
+          <tr>
             <td>Status</td>
             <td>{userStatus(user.status)}</td>
           </tr>

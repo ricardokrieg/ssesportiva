@@ -12,6 +12,7 @@ import ticketReducer from './ticket';
 import pendingBetReducer from './pending_bet';
 import confirmedBetReducer from './confirmed_bet';
 import pendingTicketReducer from './pending_ticket';
+import memberReducer from './member';
 
 export default combineReducers({
   firebase: firebaseReducer,
@@ -26,4 +27,5 @@ export default combineReducers({
   pendingBet: pendingBetReducer,
   confirmedBet: confirmedBetReducer,
   pendingTicket: pendingTicketReducer,
+  member: memberReducer,
 });

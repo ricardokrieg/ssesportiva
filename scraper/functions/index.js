@@ -46,6 +46,7 @@ const MAX_BET_VALUE = 100000; // R$1.000,00
 const MIN_QUOTE_VALUE = 2;
 const MIN_MINUTES_BEFORE_RESULT = 120; // 2 hours
 const DEFAULT_MAX_VALUE = 1000; // R$1.000,00
+const COMMISSION = 0.2; // 20%
 
 function dateIsPast(date) {
   return moment.tz(date, 'DD/MM/YYYY HH:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'));
@@ -371,7 +372,7 @@ async function getMember(context) {
   }
 
   const data = docSnapshot.data();
-  const maxValue = data.maxValue || DEFAULT_MAX_VALUE;
+  const maxValue = parseInt(data.maxValue) || DEFAULT_MAX_VALUE;
 
   return { ...data, maxValue, uid: user.token.uid };
 }
@@ -1300,10 +1301,11 @@ exports.getMemberDetails = functions
         }
       }
 
-      const memberCommission = memberIn * 0.2;
+      const memberCommission = memberIn * COMMISSION;
       const total = memberIn - memberOut - memberCommission;
 
       return {
+        name: member.name,
         in: memberIn,
         out: memberOut,
         commission: memberCommission,
@@ -1430,6 +1432,68 @@ exports.getPendingTickets = functions
       }
 
       return tickets;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getMembers = functions
+  .https
+  .onCall(async (data, context) => {
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to get members`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      if (!member.admin) {
+        console.error(new Error(`Non-Admin Member ${member.email} tried to get members`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      const querySnapshot = await membersCol.get();
+
+      const members = [];
+      for (let member of querySnapshot.docs) {
+        const data = member.data();
+
+        let ticketsRef = ticketsCol.where('confirmedBy', '==', data['email']);
+        if (data['resetAt']) {
+          ticketsRef = ticketsRef.where('confirmedAt', '>=', data['resetAt']);
+        }
+        const ticketSnapshot = await ticketsRef.get();
+
+        let memberIn = 0;
+        let memberOut = 0;
+
+        for (let docSnapshot of ticketSnapshot.docs) {
+          const ticketData = await docSnapshot.data();
+          memberIn += ticketData['value'];
+
+          if (ticketData['result'] === 'win') {
+            memberOut += ticketData['expectedReturn'];
+          }
+        }
+
+        const memberCommission = memberIn * COMMISSION;
+        const total = memberIn - memberOut - memberCommission;
+
+        members.push({
+          name: data['name'],
+          email: data['email'],
+          maxValue: parseInt(data['maxValue']) || DEFAULT_MAX_VALUE,
+          in: memberIn,
+          out: memberOut,
+          commission: memberCommission,
+          total,
+          status: data['blocked'] ? 'Aguardando ativação' : 'OK',
+        });
+      }
+
+      return members;
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };

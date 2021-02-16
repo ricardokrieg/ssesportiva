@@ -17,6 +17,7 @@ import ConfirmBetContainer from './containers/ConfirmBetContainer';
 import TicketContainer from './containers/TicketContainer';
 import NotFoundContainer from './containers/NotFoundContainer';
 import PendingTicketsContainer from './containers/PendingTicketsContainer';
+import MembersContainer from './containers/MembersContainer';
 import ToastContainer from './components/ToastContainer';
 import { connect } from 'react-redux';
 
@@ -63,6 +64,7 @@ class App extends Component {
             path="/bilhetes-em-aberto"
             component={PendingTicketsContainer}
           />
+          <Route exact path="/caixa" component={MembersContainer} />
           <Route exact path="*" component={NotFoundContainer} />
         </Switch>
       </AppContainer>
