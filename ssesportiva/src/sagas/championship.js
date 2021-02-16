@@ -29,7 +29,7 @@ export function* getChampionship({ payload: { id } }) {
 
     let { games } = data;
     games = filter(games, (game) => {
-      const gameDate = moment(game.date, 'DD/MM/YYYY hh:mm');
+      const gameDate = moment(game.date, 'DD/MM/YYYY HH:mm');
 
       return gameDate > moment();
     });

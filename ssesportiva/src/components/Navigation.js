@@ -14,6 +14,10 @@ const isValidUser = (auth, user) => {
   return auth && !auth.isEmpty && !isNull(user);
 };
 
+const isAdminUser = (auth, user) => {
+  return isValidUser(auth, user) && user.admin;
+};
+
 class Navigation extends Component {
   constructor(props) {
     super(props);
@@ -110,6 +114,19 @@ class Navigation extends Component {
                     >
                       <FontAwesomeIcon icon={faKey} />
                       <span className="mx-2">Aprovar Aposta</span>
+                    </Link>
+                  </NavItem>
+                )}
+
+                {isAdminUser(auth, user) && (
+                  <NavItem>
+                    <Link
+                      to="/bilhetes-em-aberto"
+                      onClick={this.collapse.bind(this)}
+                      className="nav-link"
+                    >
+                      <FontAwesomeIcon icon={faKey} />
+                      <span className="mx-2">Bilhetes em Aberto</span>
                     </Link>
                   </NavItem>
                 )}

@@ -11,6 +11,7 @@ import toastReducer from './toast';
 import ticketReducer from './ticket';
 import pendingBetReducer from './pending_bet';
 import confirmedBetReducer from './confirmed_bet';
+import pendingTicketReducer from './pending_ticket';
 
 export default combineReducers({
   firebase: firebaseReducer,
@@ -24,4 +25,5 @@ export default combineReducers({
   ticket: ticketReducer,
   pendingBet: pendingBetReducer,
   confirmedBet: confirmedBetReducer,
+  pendingTicket: pendingTicketReducer,
 });

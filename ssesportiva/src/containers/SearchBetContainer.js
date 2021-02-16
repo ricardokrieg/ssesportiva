@@ -59,7 +59,7 @@ class SearchBetContainer extends React.Component {
   }
 
   getTicketDate(ticket) {
-    return moment(ticket.createdAt._seconds * 1000).format('DD/MM/YYYY hh:mm');
+    return moment(ticket.createdAt._seconds * 1000).format('DD/MM/YYYY HH:mm');
   }
 
   getTicketStatus(ticket) {

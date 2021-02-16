@@ -110,7 +110,7 @@ class TicketContainer extends React.Component {
     const betType =
       ticket.options.length > 1 ? 'Aposta Múltipla' : 'Aposta Simples';
     const date = moment(ticket.createdAt._seconds * 1000).format(
-      'DD/MM/YYYY hh:mm'
+      'DD/MM/YYYY HH:mm'
     );
 
     return (

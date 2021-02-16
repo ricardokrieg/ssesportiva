@@ -48,7 +48,7 @@ const MIN_MINUTES_BEFORE_RESULT = 120; // 2 hours
 const DEFAULT_MAX_VALUE = 1000; // R$1.000,00
 
 function dateIsPast(date) {
-  return moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'));
+  return moment.tz(date, 'DD/MM/YYYY HH:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'));
 }
 
 function isValidString(value) {
@@ -192,7 +192,7 @@ function isValidGame(game) {
   }
   if (!isValidString(date) || dateIsPast(date)) {
     console.error(new Error(`invalid game.date: ${date}`));
-    console.error(new Error(`Game Date: ${moment.tz(date, 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo')}`));
+    console.error(new Error(`Game Date: ${moment.tz(date, 'DD/MM/YYYY HH:mm', 'America/Sao_Paulo')}`));
     console.error(new Error(`Current Date: ${moment().tz('America/Sao_Paulo')}`));
     return false;
   }
@@ -1242,7 +1242,7 @@ exports.setTicketResult = functions
       const ticketData = docSnapshot.data();
 
       for (let option of ticketData['options']) {
-        const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo');
+        const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY HH:mm', 'America/Sao_Paulo');
         const dateDiffMinutes = (dateDiff / 1000) / 60;
 
         if (dateDiffMinutes < MIN_MINUTES_BEFORE_RESULT) {
@@ -1309,6 +1309,7 @@ exports.getMemberDetails = functions
         commission: memberCommission,
         total,
         status: member.blocked ? 'Aguardando ativação' : 'OK',
+        admin: member.admin,
       };
     } catch (e) {
       console.error(e);
@@ -1337,7 +1338,7 @@ exports.getTicket = functions
 
       let gameNotFinished = false;
       for (let option of ticketData['options']) {
-        const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY hh:mm', 'America/Sao_Paulo');
+        const dateDiff = moment().tz('America/Sao_Paulo') - moment.tz(option['gameDate'], 'DD/MM/YYYY HH:mm', 'America/Sao_Paulo');
         const dateDiffMinutes = (dateDiff / 1000) / 60;
 
         if (dateDiffMinutes < MIN_MINUTES_BEFORE_RESULT) {
@@ -1386,6 +1387,44 @@ exports.getConfirmedBets = functions
         const data = ticket.data();
 
         if (member.resetAt && data.approvedAt < member.resetAt) continue;
+
+        tickets.push(data);
+      }
+
+      return tickets;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getPendingTickets = functions
+  .https
+  .onCall(async (data, context) => {
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to get pending tickets`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      if (!member.admin) {
+        console.error(new Error(`Non-Admin Member ${member.email} tried to get pending tickets`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      const oneMonthAgo = moment().subtract(1, 'month');
+      const docRef = ticketsCol
+        .where('createdAt', '>', oneMonthAgo.toDate());
+
+      const querySnapshot = await docRef.get();
+
+      const tickets = [];
+      for (let ticket of querySnapshot.docs) {
+        const data = ticket.data();
+
+        if (data.result === 'win' || data.result === 'loss') continue;
 
         tickets.push(data);
       }
