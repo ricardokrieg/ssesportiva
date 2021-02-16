@@ -103,7 +103,7 @@ class PendingTicketsContainer extends React.Component {
       return <div className="text-center mt-3">Nenhum bilhete pronto</div>;
     }
 
-    return this.renderTickets(pendingTickets);
+    return this.renderTickets(pendingTickets, false);
   }
 
   renderBlockedTickets() {
@@ -113,10 +113,10 @@ class PendingTicketsContainer extends React.Component {
       return <div className="text-center mt-3">Nenhum bilhete bloqueado</div>;
     }
 
-    return this.renderTickets(blockedTickets);
+    return this.renderTickets(blockedTickets, true);
   }
 
-  renderTickets(tickets) {
+  renderTickets(tickets, isBlocked) {
     return (
       <>
         {tickets.map((ticket, index) => (
@@ -154,8 +154,13 @@ class PendingTicketsContainer extends React.Component {
                       decimalScale={2}
                     />
                   </div>
-                  <div>Desbloqueia:</div>
-                  <div>{this.getPendingDate(ticket)}</div>
+
+                  {isBlocked && (
+                    <>
+                      <div>Desbloqueia:</div>
+                      <div>{this.getPendingDate(ticket)}</div>
+                    </>
+                  )}
                 </div>
               </div>
             </Link>
