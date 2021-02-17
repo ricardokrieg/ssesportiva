@@ -734,7 +734,7 @@ async function startScrape() {
 exports.scrape = functions
   .runWith(runtimeOpts)
   .pubsub
-  .schedule('every 4 hours')
+  .schedule('every 1 hour')
   .onRun(async (context) => {
     await startScrape();
 
