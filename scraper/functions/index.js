@@ -1293,13 +1293,17 @@ exports.getMemberDetails = functions
 
       let memberIn = 0;
       let memberOut = 0;
+      let ticketCount = 0;
+      let winTicketCount = 0;
 
       for (let docSnapshot of querySnapshot.docs) {
         const data = await docSnapshot.data();
         memberIn += data['value'];
+        ticketCount++;
 
         if (data['result'] === 'win') {
           memberOut += data['expectedReturn'];
+          winTicketCount++;
         }
       }
 
@@ -1314,6 +1318,8 @@ exports.getMemberDetails = functions
         total,
         status: member.blocked ? 'Aguardando ativação' : 'OK',
         admin: member.admin,
+        ticketCount,
+        winTicketCount,
       };
     } catch (e) {
       console.error(e);
@@ -1470,13 +1476,17 @@ exports.getMembers = functions
 
         let memberIn = 0;
         let memberOut = 0;
+        let ticketCount = 0;
+        let winTicketCount = 0;
 
         for (let docSnapshot of ticketSnapshot.docs) {
           const ticketData = await docSnapshot.data();
           memberIn += ticketData['value'];
+          ticketCount++;
 
           if (ticketData['result'] === 'win') {
             memberOut += ticketData['expectedReturn'];
+            winTicketCount++;
           }
         }
 
@@ -1492,6 +1502,8 @@ exports.getMembers = functions
           commission: memberCommission,
           total,
           status: data['blocked'] ? 'Aguardando ativação' : 'OK',
+          ticketCount,
+          winTicketCount,
         });
       }
 

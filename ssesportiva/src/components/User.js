@@ -4,7 +4,7 @@ import { isNull } from 'lodash';
 import NumberFormat from 'react-number-format';
 import Loading from './Loading';
 
-const User = ({ auth, user }) => {
+const User = ({ auth, user, showWinPercentage }) => {
   if (auth.isEmpty) return null;
   if (isNull(user)) return <Loading />;
 
@@ -14,6 +14,23 @@ const User = ({ auth, user }) => {
     } else {
       return <span className="text-warning">{status}</span>;
     }
+  };
+
+  const getWinTicketPercentage = () => {
+    const percentage =
+      user.ticketCount === 0 ? 0 : user.winTicketCount / user.ticketCount;
+
+    return (
+      <NumberFormat
+        decimalSeparator=","
+        value={percentage * 100}
+        prefix={'('}
+        suffix={'%)'}
+        displayType={'text'}
+        fixedDecimalScale
+        decimalScale={2}
+      />
+    );
   };
 
   return (
@@ -31,6 +48,17 @@ const User = ({ auth, user }) => {
           <tr>
             <td>Status</td>
             <td>{userStatus(user.status)}</td>
+          </tr>
+          <tr>
+            <td>Apostas</td>
+            <td>{user.ticketCount}</td>
+          </tr>
+          <tr>
+            <td>Apostas Ganhadoras</td>
+            <td>
+              {user.winTicketCount}{' '}
+              {showWinPercentage && getWinTicketPercentage()}
+            </td>
           </tr>
           <tr>
             <td>Entradas</td>

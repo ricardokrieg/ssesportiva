@@ -58,18 +58,38 @@ class MembersContainer extends React.Component {
     return member;
   }
 
+  getWinTicketPercentage = (ticketCount, winTicketCount) => {
+    const percentage = ticketCount === 0 ? 0 : winTicketCount / ticketCount;
+
+    return (
+      <NumberFormat
+        decimalSeparator=","
+        value={percentage * 100}
+        prefix={'('}
+        suffix={'%)'}
+        displayType={'text'}
+        fixedDecimalScale
+        decimalScale={2}
+      />
+    );
+  };
+
   renderTotal() {
     const { members } = this.props;
     let totalIn = 0;
     let totalOut = 0;
     let totalCommission = 0;
     let totalTotal = 0;
+    let totalTicketCount = 0;
+    let totalWinTicketCount = 0;
 
     for (let member of members) {
       totalIn += member.in;
       totalOut += member.out;
       totalCommission += member.commission;
       totalTotal += member.total;
+      totalTicketCount += member.ticketCount;
+      totalWinTicketCount += member.winTicketCount;
     }
 
     return (
@@ -80,6 +100,20 @@ class MembersContainer extends React.Component {
 
         <table className="table">
           <tbody>
+            <tr>
+              <td>Apostas</td>
+              <td>{totalTicketCount}</td>
+            </tr>
+            <tr>
+              <td>Apostas Ganhadoras</td>
+              <td>
+                {totalWinTicketCount}{' '}
+                {this.getWinTicketPercentage(
+                  totalTicketCount,
+                  totalWinTicketCount
+                )}
+              </td>
+            </tr>
             <tr>
               <td>Entradas</td>
               <td>
@@ -155,6 +189,7 @@ class MembersContainer extends React.Component {
                 <User
                   auth={this.getAuthForMember(member)}
                   user={this.getUserForMember(member)}
+                  showWinPercentage
                   key={index}
                 />
               </div>
