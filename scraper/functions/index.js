@@ -1478,11 +1478,13 @@ exports.getMembers = functions
         let memberOut = 0;
         let ticketCount = 0;
         let winTicketCount = 0;
+        let totalPercentage = 0;
 
         for (let docSnapshot of ticketSnapshot.docs) {
           const ticketData = await docSnapshot.data();
           memberIn += ticketData['value'];
           ticketCount++;
+          totalPercentage += ( 1 / ticketData['totalQuote']);
 
           if (ticketData['result'] === 'win') {
             memberOut += ticketData['expectedReturn'];
@@ -1504,6 +1506,7 @@ exports.getMembers = functions
           status: data['blocked'] ? 'Aguardando ativação' : 'OK',
           ticketCount,
           winTicketCount,
+          totalPercentage,
         });
       }
 

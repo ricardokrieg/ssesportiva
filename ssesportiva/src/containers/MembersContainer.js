@@ -74,6 +74,12 @@ class MembersContainer extends React.Component {
     );
   };
 
+  getExpectedPercentage = (totalPercentage, ticketCount) => {
+    if (ticketCount === 0) return 0;
+
+    return (totalPercentage / ticketCount) * 100;
+  };
+
   renderTotal() {
     const { members } = this.props;
     let totalIn = 0;
@@ -82,6 +88,7 @@ class MembersContainer extends React.Component {
     let totalTotal = 0;
     let totalTicketCount = 0;
     let totalWinTicketCount = 0;
+    let totalPercentage = 0;
 
     for (let member of members) {
       totalIn += member.in;
@@ -90,6 +97,7 @@ class MembersContainer extends React.Component {
       totalTotal += member.total;
       totalTicketCount += member.ticketCount;
       totalWinTicketCount += member.winTicketCount;
+      totalPercentage += member.totalPercentage;
     }
 
     return (
@@ -112,6 +120,22 @@ class MembersContainer extends React.Component {
                   totalTicketCount,
                   totalWinTicketCount
                 )}
+              </td>
+            </tr>
+            <tr>
+              <td>Porcentagem Esperada</td>
+              <td>
+                <NumberFormat
+                  decimalSeparator=","
+                  value={this.getExpectedPercentage(
+                    totalPercentage,
+                    totalTicketCount
+                  )}
+                  suffix={'%'}
+                  displayType={'text'}
+                  fixedDecimalScale
+                  decimalScale={2}
+                />
               </td>
             </tr>
             <tr>

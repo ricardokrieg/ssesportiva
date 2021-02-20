@@ -33,6 +33,12 @@ const User = ({ auth, user, showWinPercentage }) => {
     );
   };
 
+  const getExpectedPercentage = () => {
+    if (user.ticketCount === 0) return 0;
+
+    return (user.totalPercentage / user.ticketCount) * 100;
+  };
+
   return (
     <div className="border rounded p-3">
       <h3 className="text-center">{auth.email}</h3>
@@ -60,6 +66,21 @@ const User = ({ auth, user, showWinPercentage }) => {
               {showWinPercentage && getWinTicketPercentage()}
             </td>
           </tr>
+          {showWinPercentage && (
+            <tr>
+              <td>Porcentagem Esperada</td>
+              <td>
+                <NumberFormat
+                  decimalSeparator=","
+                  value={getExpectedPercentage()}
+                  suffix={'%'}
+                  displayType={'text'}
+                  fixedDecimalScale
+                  decimalScale={2}
+                />
+              </td>
+            </tr>
+          )}
           <tr>
             <td>Entradas</td>
             <td>
