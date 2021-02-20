@@ -748,13 +748,15 @@ exports.resetAllMembers = functions
   .timeZone('America/Sao_Paulo')
   .onRun(async (context) => {
     const docSnapshot = await membersCol.get();
-    const resetAt = admin.firestore.Timestamp.now();
+    // const resetAt = admin.firestore.Timestamp.now();
 
     for (let docRef of docSnapshot.docs) {
       const member = docRef.data();
       if (member.admin) continue;
 
-      await docRef.ref.update({ resetAt });
+      // NOTE: not resetting automatically.
+      // We just block the members here, and reset manually after payment is made
+      await docRef.ref.update({ blocked: true });
     }
 
     return null;
