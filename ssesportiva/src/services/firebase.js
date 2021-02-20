@@ -14,6 +14,9 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-firebase.functions().useEmulator('localhost', 5001);
+if (process.env.REACT_APP_USE_FIREBASE_EMULATOR) {
+  console.log('Using Firebase Emulator');
+  firebase.functions().useEmulator('localhost', 5001);
+}
 
 export default firebase;

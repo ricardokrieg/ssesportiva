@@ -10,6 +10,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "babel-cli": "^6.26.0",
     "bootstrap": "^4.6.0",
     "classnames": "^2.2.6",
     "firebase": "^8.2.6",
@@ -74,5 +75,8 @@
   },
   "prettier": {
     "singleQuote": true
+  },
+  "devDependencies": {
+    "babel-plugin-transform-inline-environment-variables": "^0.4.3"
   }
 }
