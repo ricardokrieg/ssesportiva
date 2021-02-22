@@ -18,6 +18,9 @@ import TicketContainer from './containers/TicketContainer';
 import NotFoundContainer from './containers/NotFoundContainer';
 import PendingTicketsContainer from './containers/PendingTicketsContainer';
 import MembersContainer from './containers/MembersContainer';
+import ClientsContainer from './containers/ClientsContainer';
+import NewClientContainer from './containers/NewClientContainer';
+import ClientContainer from './containers/ClientContainer';
 import ToastContainer from './components/ToastContainer';
 import { connect } from 'react-redux';
 
@@ -65,6 +68,13 @@ class App extends Component {
             component={PendingTicketsContainer}
           />
           <Route exact path="/caixa" component={MembersContainer} />
+          <Route exact path="/clientes" component={ClientsContainer} />
+          <Route
+            exact
+            path="/cadastrar-cliente"
+            component={NewClientContainer}
+          />
+          <Route exact path="/cliente/:id" component={ClientContainer} />
           <Route exact path="*" component={NotFoundContainer} />
         </Switch>
       </AppContainer>

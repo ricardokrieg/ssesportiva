@@ -32,6 +32,7 @@ const gamesCol = firestore.collection('games');
 const betsCol = firestore.collection('bets');
 const ticketsCol = firestore.collection('bilhetes');
 const membersCol = firestore.collection('members');
+const clientsCol = firestore.collection('clientes');
 
 const runtimeOpts = {
   timeoutSeconds: 300,
@@ -48,12 +49,35 @@ const MIN_MINUTES_BEFORE_RESULT = 120; // 2 hours
 const DEFAULT_MAX_VALUE = 1000; // R$1.000,00
 const COMMISSION = 0.2; // 20%
 
+function log(functionName, data, context) {
+  let strData = data ? JSON.stringify(data) : '{}';
+  let strContext = context.auth ? JSON.stringify(context.auth) : '{}';
+
+  console.log(`${functionName} data=${strData} context=${strContext}`);
+}
+
 function dateIsPast(date) {
   return moment.tz(date, 'DD/MM/YYYY HH:mm', 'America/Sao_Paulo').isBefore(moment().tz('America/Sao_Paulo'));
 }
 
 function isValidString(value) {
   return value && value.length > 0 && (typeof value === 'string');
+}
+
+function isValidClient(data) {
+  const {
+    name,
+    createdAt,
+    addedById,
+    addedByEmail,
+  } = data;
+
+  if (!isValidString(name)) return false;
+  if (!createdAt) return false;
+  if (!isValidString(addedById)) return false;
+  if (!isValidString(addedByEmail)) return false;
+
+  return true;
 }
 
 function isValidBetOption(option) {
@@ -1085,10 +1109,28 @@ exports.confirmTicket = functions
 
       const code = data['code'];
       const name = data['name'] || '';
+      const { clientId } = data;
 
       if (!code || code.length === 0) {
         console.error(new Error(`Member ${member.email} tried to confirm an invalid ticket ${JSON.stringify(data)}`));
         return { error: "Bilhete não encontrado" };
+      }
+
+      if (!clientId || clientId.length === 0) {
+        console.error(new Error(`Member ${member.email} tried to confirm a ticket without client ${JSON.stringify(data)}`));
+        return { error: "Cliente não encontrado" };
+      }
+
+      const clientRef = clientsCol.doc(clientId);
+      const clientSnapshot = await clientRef.get();
+      if (!clientSnapshot.exists) {
+        console.error(new Error(`Member ${member.email} tried to confirm a ticket with invalid client ${JSON.stringify(data)}`));
+        return { error: "Cliente não encontrado" };
+      }
+      const clientData = clientSnapshot.data();
+      if (clientData['addedById'] !== member.uid) {
+        console.error(new Error(`Member ${member.email} tried to confirm a ticket with client from another member ${JSON.stringify(data)}`));
+        return { error: "Cliente não encontrado" };
       }
 
       const docRef = betsCol.doc(code);
@@ -1127,8 +1169,9 @@ exports.confirmTicket = functions
       betData['confirmedBy'] = confirmedBy;
       betData['confirmedById'] = confirmedById;
       betData['confirmedByName'] = confirmedByName;
+      betData['clientId'] = clientRef.id;
 
-      await docSnapshot.ref.update({ confirmedAt, confirmedBy, confirmedById, confirmedByName });
+      await docSnapshot.ref.update({ confirmedAt, confirmedBy, confirmedById, confirmedByName, clientId: clientRef.id });
 
       const ticketCode = String(await generateTicketCode());
       const ticketData = {
@@ -1363,6 +1406,15 @@ exports.getTicket = functions
         ticketData['canSetResult'] = true;
       }
 
+      const clientRef = clientsCol.doc(ticketData['clientId']);
+      const clientSnapshot = await clientRef.get();
+      if (clientSnapshot.exists) {
+        const clientData = clientSnapshot.data();
+        ticketData['name'] = clientData['name'];
+      } else {
+        console.error(`Client ${ticketData['clientId']} does not exist for ticket ${ticketData['ticketCode']}`);
+      }
+
       return ticketData;
     } catch (e) {
       console.error(e);
@@ -1511,6 +1563,153 @@ exports.getMembers = functions
       }
 
       return members;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.addClient = functions
+  .https
+  .onCall(async (data, context) => {
+    log('addClient', data, context);
+
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to add client`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      const { name } = data;
+
+      if (!isValidString(name)) {
+        return { error: "Nome inválido" };
+      }
+
+      const clientData = {
+        name,
+        createdAt: admin.firestore.Timestamp.now(),
+        addedById: member.uid,
+        addedByEmail: member.email,
+      };
+
+      if (!isValidClient(clientData)) {
+        console.error(new Error(`Invalid client data: ${JSON.stringify(clientData)}`));
+        return { error: "Ocorreu um erro ao cadastrar o cliente." };
+      }
+
+      await clientsCol.add(clientData);
+      return clientData;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getClients = functions
+  .https
+  .onCall(async (data, context) => {
+    log('getClients', data, context);
+
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to get clients`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      const docRef = clientsCol
+        .where('addedById', '==', member.uid)
+        .orderBy('createdAt', 'asc');
+
+      const querySnapshot = await docRef.get();
+
+      const clients = [];
+      for (let client of querySnapshot.docs) {
+        const data = client.data();
+
+        clients.push({ ...data, id: client.ref.id });
+      }
+
+      return clients;
+    } catch (e) {
+      console.error(e);
+      return { error: "Ocorreu um erro!" };
+    }
+  });
+
+exports.getClient = functions
+  .https
+  .onCall(async (data, context) => {
+    log('getClient', data, context);
+
+    try {
+      const member = await getMember(context);
+
+      if (!member) {
+        console.error(new Error(`Non-Member tried to get client`));
+        return { error: "Ocorreu um erro" };
+      }
+
+      const id = data['id'];
+
+      if (!id || id.length === 0) {
+        return { error: "Cliente não encontrado" };
+      }
+
+      const docRef = clientsCol.doc(id);
+      const docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        return { error: "Cliente não encontrado" };
+      }
+
+      const clientData = docSnapshot.data();
+
+      if (clientData['addedById'] !== member.uid) {
+        console.error(new Error(`Member ${member.email} tried to get client ${id} from another member`));
+        return { error: "Cliente não encontrado" };
+      }
+
+      let ticketsRef = ticketsCol
+        .where('clientId', '==', id);
+
+      if (member.resetAt) {
+        ticketsRef = ticketsRef.where('confirmedAt', '>=', member.resetAt);
+      }
+
+      const querySnapshot = await ticketsRef.get();
+
+      let clientIn = 0;
+      let clientOut = 0;
+      let ticketCount = 0;
+      let winTicketCount = 0;
+      let tickets = [];
+
+      for (let docSnapshot of querySnapshot.docs) {
+        const data = await docSnapshot.data();
+        clientIn += data['value'];
+        ticketCount++;
+
+        if (data['result'] === 'win') {
+          clientOut += data['expectedReturn'];
+          winTicketCount++;
+        }
+
+        tickets.push(data);
+      }
+
+      return {
+        ...clientData,
+        ticketCount,
+        winTicketCount,
+        in: clientIn,
+        out: clientOut,
+        tickets,
+      }
     } catch (e) {
       console.error(e);
       return { error: "Ocorreu um erro!" };

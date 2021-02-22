@@ -20,6 +20,8 @@ import { watchGetPendingTickets } from './pending_ticket';
 
 import { watchGetMembers } from './member';
 
+import { watchGetClients, watchGetClient, watchAddClient } from './client';
+
 export default function* rootSaga() {
   yield all([
     watchSignin(),
@@ -39,5 +41,8 @@ export default function* rootSaga() {
     watchGetConfirmedBets(),
     watchGetPendingTickets(),
     watchGetMembers(),
+    watchGetClients(),
+    watchGetClient(),
+    watchAddClient(),
   ]);
 }

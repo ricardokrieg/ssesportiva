@@ -94,22 +94,12 @@ class BetSummaryContainer extends React.Component {
           </Row>
 
           <Row>
-            <Col>
-              <Form.Group controlId="name" className="mt-2">
-                <Form.Label className="text-white">Seu Nome</Form.Label>
-                <Form.Control
-                  type="text"
-                  onChange={(e) => {
-                    this.props.setName(e.target.value);
-                  }}
-                />
-              </Form.Group>
-            </Col>
+            <Col></Col>
 
             <Col className="d-flex justify-content-center">
               <Button
                 size="lg"
-                className="align-self-end text-white"
+                className="align-self-end text-white mt-3"
                 variant="success"
                 onClick={() => this.placeBet()}
               >

@@ -8,8 +8,8 @@ export const getPendingBet = (code) => {
   return { type: GET_PENDING_BET, payload: { code } };
 };
 
-export const confirmPendingBet = (code, name) => {
-  return { type: CONFIRM_PENDING_BET, payload: { code, name } };
+export const confirmPendingBet = (code, clientId) => {
+  return { type: CONFIRM_PENDING_BET, payload: { code, clientId } };
 };
 
 export const clearPendingBet = () => {

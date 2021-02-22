@@ -8,6 +8,7 @@ import {
   faFileAlt,
   faKey,
   faWallet,
+  faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { isNull } from 'lodash';
 
@@ -115,6 +116,19 @@ class Navigation extends Component {
                     >
                       <FontAwesomeIcon icon={faKey} />
                       <span className="mx-2">Aprovar Aposta</span>
+                    </Link>
+                  </NavItem>
+                )}
+
+                {isValidUser(auth, user) && (
+                  <NavItem>
+                    <Link
+                      to="/clientes"
+                      onClick={this.collapse.bind(this)}
+                      className="nav-link"
+                    >
+                      <FontAwesomeIcon icon={faUsers} />
+                      <span className="mx-2">Clientes</span>
                     </Link>
                   </NavItem>
                 )}

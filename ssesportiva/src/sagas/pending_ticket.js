@@ -5,7 +5,6 @@ import {
   GET_PENDING_TICKETS_ERROR,
   GET_PENDING_TICKETS_LOADING,
 } from '../actions/actionTypes';
-import { openErrorToast, openDefaultErrorToast } from '../actions/toast';
 import firebase from '../services/firebase';
 
 export function* getPendingTickets() {

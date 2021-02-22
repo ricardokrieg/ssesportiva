@@ -48,13 +48,13 @@ export function* watchGetPendingBet() {
   yield takeEvery(GET_PENDING_BET, getPendingBet);
 }
 
-export function* confirmPendingBet({ payload: { code, name } }) {
+export function* confirmPendingBet({ payload: { code, clientId } }) {
   yield put({ type: CONFIRM_PENDING_BET_LOADING });
 
   try {
     const response = yield firebase.functions().httpsCallable('confirmTicket')({
       code,
-      name,
+      clientId,
     });
     const { data } = response;
 

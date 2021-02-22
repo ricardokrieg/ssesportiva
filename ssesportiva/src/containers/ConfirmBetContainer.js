@@ -7,6 +7,7 @@ import Loading from '../components/Loading';
 import { compose } from 'redux';
 import { withRouter } from 'react-router';
 import { confirmPendingBet, getPendingBet } from '../actions/pending_bet';
+import { getClients } from '../actions/client';
 import { isNull, isEmpty } from 'lodash';
 import Error from '../components/Error';
 
@@ -16,17 +17,20 @@ class ConfirmBetContainer extends React.Component {
 
     this.state = {
       ready: false,
-      name: '',
+      clientId: '',
     };
   }
 
   componentDidMount() {
     const {
+      getClients,
       getPendingBet,
       match: {
         params: { id },
       },
     } = this.props;
+
+    getClients();
 
     getPendingBet(id, () => {
       this.setState({ ready: true });
@@ -46,20 +50,12 @@ class ConfirmBetContainer extends React.Component {
     if (isEmpty(prevProps.ticketCode) && !isEmpty(this.props.ticketCode)) {
       this.props.history.replace(`/bilhete/${this.props.ticketCode}`);
     }
-
-    if (
-      this.props.pendingBet &&
-      this.props.pendingBet.name &&
-      isEmpty(this.state.name)
-    ) {
-      this.setState({ name: this.props.pendingBet.name });
-    }
   }
 
   confirmPendingBet() {
     const { confirmPendingBet, pendingBet } = this.props;
 
-    confirmPendingBet(pendingBet.code, this.state.name);
+    confirmPendingBet(pendingBet.code, this.state.clientId);
   }
 
   renderConfirmButton() {
@@ -85,14 +81,24 @@ class ConfirmBetContainer extends React.Component {
   }
 
   renderFooter() {
-    const { pendingBet, loading } = this.props;
+    const {
+      pendingBet,
+      loading,
+      clients,
+      loadingClients,
+      errorClients,
+    } = this.props;
 
-    if (!this.state.ready || loading) {
+    if (!this.state.ready || loading || loadingClients) {
       return (
         <div className="bg-dark py-3">
           <Loading height="100%" />
         </div>
       );
+    }
+
+    if (errorClients) {
+      return <Error error={errorClients} />;
     }
 
     return (
@@ -142,15 +148,22 @@ class ConfirmBetContainer extends React.Component {
 
           <Row>
             <Col>
-              <Form.Group controlId="name" className="mt-2">
-                <Form.Label className="text-white">Nome do Cliente</Form.Label>
+              <Form.Group controlId="clientId" className="mt-2">
+                <Form.Label className="text-white">Cliente</Form.Label>
                 <Form.Control
-                  type="text"
-                  value={this.state.name}
-                  onChange={(e) => {
-                    this.setState({ name: e.target.value });
-                  }}
-                />
+                  as="select"
+                  size="lg"
+                  onChange={(event) =>
+                    this.setState({ clientId: event.target.value })
+                  }
+                >
+                  <option>Selecione o Cliente</option>
+                  {clients.map((client, index) => (
+                    <option key={index + 1} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
             </Col>
 
@@ -202,12 +215,17 @@ const mapStateToProps = (state) => {
     loadingPendingBet: state.pendingBet.loading,
     loading: state.pendingBet.confirmLoading,
     error: state.pendingBet.confirmError,
+    clients: state.client.clients,
+    loadingClients: state.client.loadingClients,
+    errorClients: state.client.errorClients,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    confirmPendingBet: (code, name) => dispatch(confirmPendingBet(code, name)),
+    getClients: () => dispatch(getClients()),
+    confirmPendingBet: (code, clientId) =>
+      dispatch(confirmPendingBet(code, clientId)),
     getPendingBet: (id, callback) => dispatch(getPendingBet(id), callback()),
   };
 };
