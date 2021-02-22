@@ -1406,13 +1406,15 @@ exports.getTicket = functions
         ticketData['canSetResult'] = true;
       }
 
-      const clientRef = clientsCol.doc(ticketData['clientId']);
-      const clientSnapshot = await clientRef.get();
-      if (clientSnapshot.exists) {
-        const clientData = clientSnapshot.data();
-        ticketData['name'] = clientData['name'];
-      } else {
-        console.error(`Client ${ticketData['clientId']} does not exist for ticket ${ticketData['ticketCode']}`);
+      if (ticketData['clientId']) {
+        const clientRef = clientsCol.doc(ticketData['clientId']);
+        const clientSnapshot = await clientRef.get();
+        if (clientSnapshot.exists) {
+          const clientData = clientSnapshot.data();
+          ticketData['name'] = clientData['name'];
+        } else {
+          console.error(`Client ${ticketData['clientId']} does not exist for ticket ${ticketData['ticketCode']}`);
+        }
       }
 
       return ticketData;
