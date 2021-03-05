@@ -1350,7 +1350,8 @@ exports.getMemberDetails = functions
         }
       }
 
-      const memberCommission = memberIn * COMMISSION;
+      const commissionPercentage = member['comissao'] ? (member['comissao'] / 100) : COMMISSION;
+      const memberCommission = memberIn * commissionPercentage;
       const total = memberIn - memberOut - memberCommission;
 
       return {
@@ -1546,7 +1547,8 @@ exports.getMembers = functions
           }
         }
 
-        const memberCommission = memberIn * COMMISSION;
+        const commissionPercentage = data['comissao'] ? (data['comissao'] / 100) : COMMISSION;
+        const memberCommission = memberIn * commissionPercentage;
         const total = memberIn - memberOut - memberCommission;
 
         members.push({
