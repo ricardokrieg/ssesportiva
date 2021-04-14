@@ -35,8 +35,8 @@ const membersCol = firestore.collection('members');
 const clientsCol = firestore.collection('clientes');
 
 const runtimeOpts = {
-  timeoutSeconds: 300,
-  memory: '512MB'
+  timeoutSeconds: 540,
+  memory: '1GB'
 }
 // Firebase - END
 
