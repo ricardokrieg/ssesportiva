@@ -593,7 +593,10 @@ async function scrapeChampionship(category, title, url, isDayGames) {
 
 async function scrapeContent() {
   const url = `${baseUrl}/campeonatos.aspx`;
+
+  console.log(`Accessing ${url}`);
   const html = await rp(url);
+  console.log(`Downloaded HTML content`);
 
   const categories = [];
 
